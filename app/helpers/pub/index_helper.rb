@@ -1,0 +1,2 @@
+module Pub::IndexHelper
+end

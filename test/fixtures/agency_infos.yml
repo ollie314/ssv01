@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  logo: MyString
+  summary: MyText
+  description: MyText
+  agency_id: 1
+
+two:
+  logo: MyString
+  summary: MyText
+  description: MyText
+  agency_id: 1
