@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Iso2:</b>
+  <%= @language.iso2 %>
+</p>
+
+<p>
+  <b>Iso3:</b>
+  <%= @language.iso3 %>
+</p>
+
+<p>
+  <b>Ietf:</b>
+  <%= @language.ietf %>
+</p>
+
+<p>
+  <b>Name:</b>
+  <%= @language.name %>
+</p>
+
+<p>
+  <b>Flag:</b>
+  <%= @language.flag %>
+</p>
+
+
+<%= link_to 'Edit', edit_language_path(@language) %> |
+<%= link_to 'Back', languages_path %>
