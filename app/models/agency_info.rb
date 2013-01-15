@@ -1,4 +1,5 @@
 class AgencyInfo < ActiveRecord::Base
-  belongs_to :Agency
+  has_many :agency_languages, :dependent => :destroy
+  has_many :languages, :through => :agency_languages
   attr_accessible :agency_id, :description, :logo, :summary
 end
