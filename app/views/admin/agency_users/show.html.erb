@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Email:</b>
+  <%= @admin_agency_user.email %>
+</p>
+
+<p>
+  <b>Password:</b>
+  <%= @admin_agency_user.password %>
+</p>
+
+<p>
+  <b>Firstname:</b>
+  <%= @admin_agency_user.firstname %>
+</p>
+
+<p>
+  <b>Lastname:</b>
+  <%= @admin_agency_user.lastname %>
+</p>
+
+<p>
+  <b>Rights:</b>
+  <%= @admin_agency_user.rights %>
+</p>
+
+
+<%= link_to 'Edit', edit_admin_agency_user_path(@admin_agency_user) %> |
+<%= link_to 'Back', admin_agency_users_path %>

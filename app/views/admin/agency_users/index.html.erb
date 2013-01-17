@@ -1,0 +1,31 @@
+<h1>Listing admin_agency_users</h1>
+
+<table>
+  <tr>
+    <th>Email</th>
+    <th>Password</th>
+    <th>Firstname</th>
+    <th>Lastname</th>
+    <th>Rights</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @admin_agency_users.each do |admin_agency_user| %>
+  <tr>
+    <td><%= admin_agency_user.email %></td>
+    <td><%= admin_agency_user.password %></td>
+    <td><%= admin_agency_user.firstname %></td>
+    <td><%= admin_agency_user.lastname %></td>
+    <td><%= admin_agency_user.rights %></td>
+    <td><%= link_to 'Show', admin_agency_user %></td>
+    <td><%= link_to 'Edit', edit_admin_agency_user_path(admin_agency_user) %></td>
+    <td><%= link_to 'Destroy', admin_agency_user, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Agency user', new_admin_agency_user_path %>

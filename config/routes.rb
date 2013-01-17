@@ -5,7 +5,16 @@ Ssv01::Application.routes.draw do
   # routes for administration namespace
   namespace :admin do
     resources :languages
+    resources :agency_users
+
+    match "admin/connection/" => "connection#index"
+    match "admin/connection/index" => "connection#index"
+    match "admin/connection/login" => "connection#login", :method => :post
+    match "admin/connection/logout" => "connection#logout"
   end
+
+  get "home/index"
+  get "home/home"
 
   get "api/documentation/index"
   get "api/documentation/list"
