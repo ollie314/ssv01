@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  agency_info_id: 1
+  language_id: 1
+  is_default: false
+
+two:
+  agency_info_id: 1
+  language_id: 1
+  is_default: false

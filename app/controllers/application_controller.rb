@@ -16,8 +16,11 @@ class ApplicationController < ActionController::Base
   def check_for_agency_id
     @agency_id = params[:id]
     if @agency_id.nil?
-      @response = { :statusCode => 1, :statusMessage => "No agency id defined", :content => nil }
-      respond_with @response
+      @agency_id = params[:agency_id]
+      if @agency_id.nil?
+        @response = { :statusCode => 1, :statusMessage => "No agency id defined", :content => nil }
+        respond_with @response
+      end
     else
       # fetch information for the agency
       @agency = Agency.find(@agency_id)

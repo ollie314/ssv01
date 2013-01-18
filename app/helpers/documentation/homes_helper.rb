@@ -1,0 +1,2 @@
+module Documentation::HomesHelper
+end

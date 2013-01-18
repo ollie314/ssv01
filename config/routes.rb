@@ -1,6 +1,37 @@
 Ssv01::Application.routes.draw do
-
   root :to => 'maintenance#index'
+
+  # check following notation to achieve same result
+  #resources :publishers do
+  #  resources :magazines do
+  #    resources :photos
+  #  end
+  #end
+
+  namespace :testing do
+    match ":agency_id/sales/" => "sales#list", :via => :get
+    match ":agency_id/sales/list" => "sales#list", :via => :get
+    match ":agency_id/sales/search" => "sales#search", :via => :get
+
+    match ":agency_id/sales/:object_id" => "object#index", :via => :get
+    match ":agency_id/sales/:object_id/summary" => "object#summary", :via => :get
+    match ":agency_id/sales/:object_id/details" => "object#details", :via => :get
+    match ":agency_id/sales/:object_id/location" => "object#location", :via => :get
+    match ":agency_id/sales/:object_id/pictures" => "object#pictures", :via => :get
+    match ":agency_id/sales/:object_id/videos" => "object#videos", :via => :get
+
+    match ":agency_id/rentals/" => "rentals#list", :via => :get
+    match ":agency_id/rentals/list" => "rentals#list", :via => :get
+    match ":agency_id/rentals/search" => "rentals#search", :via => :get
+
+    match ":agency_id/rentals/:object_id/summary" => "object#summary", :via => :get
+    match ":agency_id/rentals/:object_id/details" => "object#details", :via => :get
+    match ":agency_id/rentals/:object_id/location" => "object#location", :via => :get
+    match ":agency_id/rentals/:object_id/pictures" => "object#pictures", :via => :get
+    match ":agency_id/rentals/:object_id/videos" => "object#videos", :via => :get
+    match ":agency_id/rentals/:object_id/pricing" => "object#pricing", :via => :get
+    match ":agency_id/rentals/:object_id/availability" => "object#availability", :via => :get
+  end
 
   # routes for administration namespace
   namespace :admin do
@@ -65,24 +96,27 @@ Ssv01::Application.routes.draw do
   get "account/languages"
   get "account/kind"
   get "account/trends"
+  get "account/index"
+  get "account/show"
+  get "account/edit"
 
-  get "rentals/list"
-  get "rentals/search"
-  get "rentals/object_summary"
-  get "rentals/object_details"
-  get "rentals/object_pictures"
-  get "rentals/object_location"
-  get "rentals/object_pricing"
-  get "rentals/object_video"
-  get "rentals/object_availability"
+  #get "rentals/list"
+  #get "rentals/search"
+  #get "rentals/object_summary"
+  #get "rentals/object_details"
+  #get "rentals/object_pictures"
+  #get "rentals/object_location"
+  #get "rentals/object_pricing"
+  #get "rentals/object_video"
+  #get "rentals/object_availability"
 
-  get "sales/list"
-  get "sales/search"
-  get "sales/object_summary"
-  get "sales/object_details"
-  get "sales/object_location"
-  get "sales/object_pictures"
-  get "sales/object_video"
+  #get "sales/list"
+  #get "sales/search"
+  #get "sales/object_summary"
+  #get "sales/object_details"
+  #get "sales/object_location"
+  #get "sales/object_pictures"
+  #get "sales/object_video"
 
   get "oauth/authorize"
   get "oauth/request_token"
@@ -90,10 +124,6 @@ Ssv01::Application.routes.draw do
   get "oauth/authenticate"
 
   get "register/signup"
-
-  get "account/index"
-  get "account/show"
-  get "account/edit"
 
   get "connection/login"
   get "connection/logout"

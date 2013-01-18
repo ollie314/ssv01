@@ -1,0 +1,104 @@
+[
+    {
+        "id": "132df8c8-f848-4075-9f1b-cb9a30a01b80",
+        "name": "Chalet les essert",
+        "kind" : "1",
+        "kind_description" : {
+            "en" : "Chalet",
+            "fr" : "Chalet"
+        },
+        "price" : 985000.00,
+        "nb_rooms" : 2,
+        "nb_floor" : "na",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
+        "name": "Falaise 26",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 240000.00,
+        "nb_rooms" : 1,
+        "nb_floor" : "1",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "88bd06f8-b579-4639-8ca5-02b68dfba343",
+        "name": "Entremont 09",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 750000.00,
+        "nb_rooms" : 3,
+        "nb_floor" : "0",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "7bce56a9-4b31-439e-9bc4-d5117b06b530",
+        "name": "Montre Cristo 222",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 850000.00,
+        "nb_rooms" : 1,
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "132df8c8-f848-4075-9f1b-cb9a30a01b80",
+        "name": "Chalet les essert",
+        "kind" : "1",
+        "kind_description" : {
+            "en" : "Chalet",
+            "fr" : "Chalet"
+        },
+        "price" : 985000.00,
+        "nb_rooms" : 2,
+        "nb_floor" : "na",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
+        "name": "Falaise 26",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 240000.00,
+        "nb_rooms" : 1,
+        "nb_floor" : "1",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "88bd06f8-b579-4639-8ca5-02b68dfba343",
+        "name": "Entremont 09",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 750000.00,
+        "nb_rooms" : 3,
+        "nb_floor" : "0",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "7bce56a9-4b31-439e-9bc4-d5117b06b530",
+        "name": "Montre Cristo 222",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 850000.00,
+        "nb_rooms" : 1,
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    }
+]

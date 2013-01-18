@@ -1,0 +1,175 @@
+{
+    "id": "132df8c8-f848-4075-9f1b-cb9a30a01b80",
+    "name": "Chalet les essert",
+    "kind" : "1",
+    "kind_description" : {
+        "en" : "Chalet",
+        "fr" : "Chalet"
+    },
+    "price" : 985000.00,
+    "nb_rooms" : 2,
+    "nb_floor" : "na",
+    "sellable_cat" : 1,
+    "main_picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
+    "summary" : {
+        "en" : "Superb attic apartment of 164m2 for resale.",
+        "fr" : "Superbe appartement mansardé de 164m2 pour la revente.."
+    },
+    "details" : {
+        "en" : "Superb attic apartment of 164m2 for resale located in an idyllic and quiet setting, near the ski-lift Le Rouge and Les Esserts. This penthouse in a small residential building will fill you with enthusiasm. Breathtaking and unrestricted view over the Combins mountain range. Exceptional sunshine. Direct private access from the garage guarantees you absolute privacy. One indoor parking space complete this exclusive property.",
+        "fr" : "Superbe appartement mansardé de 164m2 pour la revente situés dans un cadre idyllique et paisible, à proximité du téléski Rouge et Le Esserts. Cet appartement dans un petit immeuble résidentiel vous comblera avec enthousiasme. Vue imprenable et dégagée sur le massif des Combins. Un ensoleillement exceptionnel. Accès direct depuis le garage privé vous garantit une intimité absolue. Un espace de stationnement intérieur complètent cette propriété exclusif."
+    },
+    "address" : {
+        "street1" : "",
+        "street2" : "",
+        "zipcode" : 1936,
+        "city" : "Verbier",
+        "state" : {
+            "en" : "Wallis",
+            "fr" : "Valais"
+        },
+        "country" : {
+            "iso" : "CH",
+            "name" : {
+                "en" : "Switzerland",
+                "fr" : "Suisse"
+            }
+        }
+    },
+    "location" : {
+        "long" : 0,
+        "lat" : 1
+    },
+    "floor" : 3,
+    "built_at" : 1990,
+    "properties" :[
+        {
+            "key" : "renovation_founds",
+            "value" : 0.00,
+            "type" : "float"
+        },
+        {
+            "key" : "loan",
+            "value" : 5000.00,
+            "type" : "float"
+        },
+        {
+            "key" : "exposure",
+            "value" : "south",
+            "type" : "string"
+        },
+        {
+            "key" : "heating_en",
+            "value" : "electric",
+            "type" : "string"
+        },
+        {
+            "key" : "heating_fr",
+            "value" : "electrique",
+            "type" : "string"
+        },
+        {
+            "key" : "cable_tv",
+            "value" : "true",
+            "type" : "boolean"
+        }
+    ],
+    "attachments" : [
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
+            "kind" : 1,
+            "title" : {
+                "en" : "First room",
+                "fr" : "Premiere chambre"
+            },
+            "caption" : {
+                "en" : "The first awesome room",
+                "fr" : "Son incroyable premiere chambre"
+            }
+        },
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_2.jpg",
+            "kind" : 1,
+            "title" : {
+                "en" : "Second room",
+                "fr" : "Seconds chambre"
+            },
+            "caption" : {
+                "en" : "The second room",
+                "fr" : "La seconde chambre"
+            }
+        },
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_3.jpg",
+            "kind" : 1,
+            "title" : {
+                "en" : "Third room",
+                "fr" : "Troisieme chambre"
+            },
+            "caption" : {
+                "en" : "The third room",
+                "fr" : "La troisieme chambre"
+            }
+        },
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_4.jpg",
+            "kind" : 1,
+            "title" : {
+                "en" : "Fourth room",
+                "fr" : "Quatrieme chambre"
+            },
+            "caption" : {
+                "en" : "The fourth awesome room",
+                "fr" : "Son incroyable quatrieme chambre"
+            }
+        },
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_5.jpg",
+            "kind" : 1,
+            "title" : {
+                "en" : "Fifth room",
+                "fr" : "Cinquieme chambre"
+            },
+            "caption" : {
+                "en" : "The fifth awesome room",
+                "fr" : "Son incroyable cinquieme chambre"
+            }
+        },
+        {
+            "url" : "http://www.youtube.com/embed/ujDlfOBKwRo?autoplay=1",
+            "kind" : 3,
+            "title" : {
+                "en" : "First video",
+                "fr" : "Premiere video"
+            },
+            "caption" : {
+                "en" : "The first video",
+                "fr" : "La premiere video"
+            }
+        },
+        {
+            "url" : "http://totheweb.com/eichler/images/subpage_photos/floor-plan-1224.gif",
+            "kind" : 2,
+            "title" : {
+                "en" : "First floor",
+                "fr" : "Premier etage"
+            },
+            "caption" : {
+                "en" : "The plan of the first floor",
+                "fr" : "Le plan du premier etage"
+            }
+        },
+        {
+            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/fake_doc.pdf",
+            "kind" : 4,
+            "title" : {
+                "en" : "A fake document",
+                "fr" : "Un faux document"
+            },
+            "caption" : {
+                "en" : "Content of the fake document",
+                "fr" : "Contenu du faux document"
+            }
+        }
+    ]
+}

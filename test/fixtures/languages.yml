@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  iso2: MyString
+  iso3: MyString
+  ietf: MyString
+  name: MyString
+  flag: MyString
+
+two:
+  iso2: MyString
+  iso3: MyString
+  ietf: MyString
+  name: MyString
+  flag: MyString

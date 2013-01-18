@@ -1,0 +1,2 @@
+module Testing::RentalsHelper
+end
