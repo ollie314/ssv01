@@ -1,0 +1,16 @@
+<%= simple_form_for @admin_agency, :html => { :multipart => true } do |f| %>
+  <%= f.error_notification %>
+  <div class="form-inputs">
+    <%= text_field :admin_agency, :name, :class => 'span12', :placeholder => "Agency's name"  %>
+    <%= text_field :admin_agency, :website, :class => 'span12', :placeholder => 'http://' %>
+    <%= email_field :admin_agency, :mail, :class => 'span12 email', :placeholder => "Agency's mail" %>
+    <%= phone_field :admin_agency, :phone, :class => 'span12 phone', :placeholder => "Agency's phone" %>
+    <%= f.label "Logo" %>
+    <%= file_field :admin_agency, :logo, :class => 'upload-input upload-logo span12' %>
+    <%= label :admin_agency, :info, :class => 'label_info' %>
+    <%= text_area :admin_agency, :info, :class => 'span12', :rows => '5' %>
+  </div>
+  <div class="form-actions">
+    <%= f.button :submit %>
+  </div>
+<% end %>

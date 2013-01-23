@@ -1,0 +1,15 @@
+<section class="agency-information">
+  <p id="notice"><%= notice %></p>
+
+  <h2 class="well">
+    <img src="<%= File.join('/uploads', 'clients', String(@admin_agency.id), 'logo', @admin_agency.logo) %>" alt="logo" width="80"/>
+    <span class="section-title">Information for <%= @admin_agency.name %></span>
+  </h2>
+
+  <div class="row-fluid">
+    <%= render 'admin/agencies/widgets/general_information' %>
+    <%= render 'admin/agencies/widgets/agency_info' %>
+  </div>
+  <%= link_to 'Edit', edit_admin_agency_path(@admin_agency) %> |
+  <%= link_to 'Back', admin_agencies_path %>
+</section>
