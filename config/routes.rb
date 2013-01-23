@@ -37,11 +37,19 @@ Ssv01::Application.routes.draw do
   namespace :admin do
     resources :languages
     resources :agency_users
+    resources :agencies
 
-    match "admin/connection/" => "connection#index"
-    match "admin/connection/index" => "connection#index"
-    match "admin/connection/login" => "connection#login", :method => :post
-    match "admin/connection/logout" => "connection#logout"
+    match '/agencies/:id/infos' => "agency_infos#show", :method => :get
+    match '/agencies/:id/infos/show' => "agency_infos#show", :method => :get
+    match '/agencies/:id/infos/edit' => "agency_infos#edit", :method => :get
+    match '/agencies/:id/infos/delete' => "agency_infos#delete", :method => :get
+    match '/agencies/:id/infos/update' => "agency_infos#update", :method => :post
+    match '/agencies/:id/infos/fetch' => "agency_infos#fetch", :method => :get
+
+    match "/connection/" => "connection#index"
+    match "/connection/index" => "connection#index"
+    match "/connection/login" => "connection#login", :method => :post
+    match "/connection/logout" => "connection#logout"
   end
 
   get "home/index"
