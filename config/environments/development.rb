@@ -1,4 +1,7 @@
 Ssv01::Application.configure do
+
+  config.middleware.insert_after(ActionDispatch::Static, Rack::LiveReload)
+
   # Settings specified here will take precedence over those in config/application.rb
 
   # In the development environment your application's code is reloaded on
@@ -34,4 +37,6 @@ Ssv01::Application.configure do
 
   # Expands the lines which load the assets
   config.assets.debug = true
+
+  #config.assets.precompile += %w( *.css *.js )
 end

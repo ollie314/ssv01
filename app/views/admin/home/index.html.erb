@@ -1,2 +1,75 @@
-<h1>Admin::Home#index</h1>
-<p>Find me in app/views/admin/home/index.html.erb</p>
+<h1 id="moduleTitle">Application administration module</h1>
+
+<section>
+</section>
+
+<section class="reservation-date-range">
+  <form class="form-horizontal">
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label" for="reservation">Reservation dates:</label>
+
+        <div class="controls">
+          <div class="input-prepend">
+            <span class="add-on"><i class="icon-calendar"></i></span><input type="text" name="reservation" id="reservation"/>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+</section>
+
+<div class="context" data-toggle="context" data-target="#timeline-embed">
+  <div class="dropdown">
+    <!-- Link or button to toggle dropdown -->
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+      <li><a tabindex="-1" href="#">Action</a></li>
+      <li><a tabindex="-1" href="#">Another action</a></li>
+      <li><a tabindex="-1" href="#">Something else here</a></li>
+      <li class="divider"></li>
+      <li><a tabindex="-1" href="#">Separated link</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- TimelineJS Example-->
+<section class="row-fluid">
+  <div id="timeline-embed"></div>
+</section>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#reservation').daterangepicker();
+
+        createStoryJS({
+            type: 'timeline',
+            width: '100%',
+            height: '600',
+            source:'/admin/home/home.json',
+            debug:false,
+            embed_id:'timeline-embed'
+        });
+
+        $.contextMenu({
+            selector: '#moduleTitle',
+            callback: function(key, options) {
+                var m = "clicked: " + key;
+                window.console && console.log(m) || alert(m);
+            },
+            items: {
+                "edit": {name: "Edit"},
+                "cut": {name: "Cut"},
+                "copy": {name: "Copy"},
+                "paste": {name: "Paste"},
+                "delete": {name: "Delete"},
+                "sep1": "---------",
+                "quit": {name: "Quit"}
+            }
+        });
+
+        $('#moduleTitle').on('click', function(e){
+            console.log('clicked', this);
+        })
+    });
+</script>
+<script src="/assets/js/storyjs-embed.js?body=1" type="text/javascript"></script>

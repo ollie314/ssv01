@@ -15,9 +15,9 @@
         <td><%= link_to admin_agency.website, admin_agency.website %></td>
         <td><%= admin_agency.mail %></td>
         <td><%= admin_agency.phone %></td>
-        <td><%= link_to 'Show', admin_agency %></td>
-        <td><%= link_to 'Edit', edit_admin_agency_path(admin_agency) %></td>
-        <td><%= link_to 'Destroy', admin_agency, method: :delete, data: {confirm: 'Are you sure?'} %></td>
+        <td><%= link_to 'Show', admin_agency, :class => 'btn btn-info'%></td>
+        <td><%= link_to 'Edit', edit_admin_agency_path(admin_agency), :class => 'btn btn-info' %></td>
+        <td><%= link_to 'Destroy', admin_agency, :class => 'btn btn-danger', method: :delete, data: {confirm: 'Are you sure?'} %></td>
       </tr>
   <% end %>
 </table>

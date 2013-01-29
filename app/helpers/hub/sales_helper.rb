@@ -1,0 +1,2 @@
+module Hub::SalesHelper
+end

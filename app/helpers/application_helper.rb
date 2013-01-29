@@ -4,6 +4,6 @@ module ApplicationHelper
   end
 
   def in_maintenance?
-    return true
+    return false
   end
 end

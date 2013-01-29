@@ -1,17 +1,28 @@
-<div class="span4">
-  <h2>General information</h2>
-  <ul>
-    <li>
-      <b>Name:</b>
-      <%= @admin_agency.name %>
-    </li>
-    <li>
-      <b>Website:</b>
-      <%= @admin_agency.website %>
-    </li>
-    <li>
-      <b>Info:</b>
-      <%= @admin_agency.info %>
-    </li>
-  </ul>
-</div>
+<section class="span4 agency-general-information">
+  <article>
+    <header>
+      <h2>General information</h2>
+    </header>
+    <ul>
+      <li>
+        <b>Name:</b>
+        <%= @admin_agency.name %>
+      </li>
+      <li>
+        <b>Website:</b>
+        <%= @admin_agency.website %>
+      </li>
+      <li>
+        <b>Info:</b>
+        <%= @admin_agency.info %>
+      </li>
+    </ul>
+    <footer>
+      <footer>
+        <a class="btn" href="#">
+          Edit ...
+        </a>
+      </footer>
+    </footer>
+  </article>
+</section>

@@ -3,9 +3,12 @@ require "digest/sha2"
 # TODO : add a salt for security reasons
 
 class Admin::AgencyUser < ActiveRecord::Base
+  has_many :addresses, :as => :addressable
+
   attr_accessible :email, :firstname, :lastname, :password, :rights
 
   attr_accessor :password
+
   before_save :encrypt_password
 
   validates_length_of :password, :within => 5..40, :message => "Length of the password must be within 5 and 40 characters"

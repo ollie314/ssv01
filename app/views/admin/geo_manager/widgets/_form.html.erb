@@ -1,0 +1,16 @@
+<h2>Create new Country</h2>
+<%= simple_form_for @country, :url => '#', :html => { :multipart => true } do |f| %>
+    <%= f.error_notification %>
+    <div class="form-inputs">
+      <%= text_field :country, :name, :class => 'span12', :placeholder => "Country's name"  %>
+      <%= text_field :country, :iso, :class => 'span12', :placeholder => 'CH, FR, CA, US, ...' %>
+      <%= f.label "Flag" %>
+      <select name="flag">
+        <%= options_for_select(@flags) %>
+      </select>
+      <img src="" alt="flag" />
+    </div>
+    <div class="form-actions">
+      <%= f.button :submit, :class => 'btn btn-primary' %>
+    </div>
+<% end %>
