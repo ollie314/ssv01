@@ -1,0 +1,10 @@
+<div class="container-fluid country-listing" style="margin-bottom:20px">
+  <h2>Listing all countries</h2>
+  <%= render 'admin/geo_manager/widgets/list' %>
+  <hr />
+  <%= link_to 'Add a new country', '#', :class => 'btn btn-primary' %>
+</div>
+<hr style="margin-bottom:20px"/>
+<div class="new-country-dlg">
+  <%= render 'admin/geo_manager/widgets/form' %>
+</div>

@@ -1,18 +1,28 @@
-<div class="span8">
+<section class="span8 agency-specific-information">
   <article>
     <header>
       <h2>Summary</h2>
     </header>
-    <p class="agency_summary inline-editable">
+    <p class="agency-summary inline-editable">
       <%=  @admin_agency.agency_info.summary %>
     </p>
+    <footer>
+      <a class="btn" href="#">
+        Edit ...
+      </a>
+    </footer>
   </article>
   <article>
     <header>
       <h2>Description</h2>
     </header>
-    <p class="agency_desription inline-editable">
+    <p class="agency-description inline-editable">
       <%=  @admin_agency.agency_info.description %>
     </p>
+    <footer>
+      <a class="btn" href="#">
+        Edit ...
+      </a>
+    </footer>
   </article>
-</div>
+</section>

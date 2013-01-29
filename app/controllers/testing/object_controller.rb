@@ -5,6 +5,10 @@ class Testing::ObjectController < ApplicationController
 
   respond_to :xml, :json
 
+  def view
+    index
+  end
+
   def index
     @object = JSON.parse(IO.read(File.dirname(__FILE__) + File::Separator + "samples" + File::Separator + "testing_sales_object.json"))
     request_id = SecureRandom.hex(32)

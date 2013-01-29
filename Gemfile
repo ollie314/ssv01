@@ -7,6 +7,19 @@ gem 'rails', '3.2.10'
 
 gem 'mysql2'
 
+group :development do
+  gem 'guard'
+  gem 'guard-livereload'
+  #gem 'rb-notifu'
+  gem 'rack-livereload'
+
+  gem 'rb-inotify', :require => false
+  gem 'rb-fsevent', :require => false
+  gem 'rb-fchange', :require => false
+  gem 'wdm', :platforms => [:mswin, :mingw], :require => false
+  gem 'win32console'
+
+end
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -19,14 +32,18 @@ group :assets do
   # gem 'therubyracer', :platforms => :ruby
 
   gem 'uglifier', '>= 1.0.3'
+
+  gem 'timelineJS-rails'
 end
 
 gem 'jquery-rails'
 
 gem 'simple_form'
 
+gem 'valid_email'
+
 # To use ActiveModel has_secure_password
-# gem 'bcrypt-ruby', '~> 3.0.0'
+ #gem 'bcrypt-ruby', '~> 3.0.0'
 
 # To use Jbuilder templates for JSON
 # gem 'jbuilder'

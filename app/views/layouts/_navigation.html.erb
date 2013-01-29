@@ -1,21 +1,33 @@
+<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar">
+        </span>
+        <span class="icon-bar">
+        </span>
+        <span class="icon-bar">
+        </span>
+</a>
 <%= link_to "Gotham", root_path, :class => 'brand' %>
-<ul class="nav">
-  <% if user_signed_in? %>
-      <li>
-        <%= link_to('Logout', :controller => 'connection', :action=>'logout') %>
-      </li>
-  <% else %>
-      <li>
-        <%= link_to('Login', :controller => 'connection', :action=>'login')  %>
-      </li>
-  <% end %>
-  <% if user_signed_in? %>
-      <li>
-        <%= link_to('Edit account', :controller => 'account', :action=>'edit') %>
-      </li>
-  <% else %>
-      <li>
-        <%= link_to('Sign up', :controller => 'register', :action=>'signup')  %>
-      </li>
-  <% end %>
-</ul>
+<div class="nav-collapse">
+  <ul class="nav">
+    <% if user_signed_in? %>
+        <li>
+          <%= link_to('/') %>
+        </li>
+    <% else %>
+        <li>
+          <%= link_to('/') %>
+        </li>
+    <% end %>
+    <% if user_signed_in? %>
+        <li>
+          <%= link_to('/') %>
+        </li>
+    <% else %>
+        <li>
+          <%= link_to('/') %>
+        </li>
+    <% end %>
+  </ul>
+</div>
+<form class="navbar-form pull-right">
+</form>

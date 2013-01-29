@@ -7,6 +7,8 @@
  *
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
  */
+/*$iconSpritePath:          "../img/glyphicons-halflings.png" !default;
+$iconWhiteSpritePath:     "../img/glyphicons-halflings-white.png" !default;*/
 article,
 aside,
 details,
@@ -1718,7 +1720,7 @@ table th[class*="span"],
   *margin-right: .3em;
   line-height: 14px;
   vertical-align: text-top;
-  background-image: url("../img/glyphicons-halflings.png");
+  background-image: url(asset-url("glyphicons-halflings.png", image));
   background-position: 14px 14px;
   background-repeat: no-repeat;
   margin-top: 1px; }
@@ -1737,7 +1739,7 @@ table th[class*="span"],
 .dropdown-menu > .active > a > [class*=" icon-"],
 .dropdown-submenu:hover > a > [class^="icon-"],
 .dropdown-submenu:hover > a > [class*=" icon-"] {
-  background-image: url("../img/glyphicons-halflings-white.png"); }
+  background-image: url(asset-url("glyphicons-halflings-white.png", image)); }
 
 .icon-glass {
   background-position: 0 0; }

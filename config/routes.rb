@@ -1,4 +1,5 @@
 Ssv01::Application.routes.draw do
+
   root :to => 'maintenance#index'
 
   # check following notation to achieve same result
@@ -33,12 +34,22 @@ Ssv01::Application.routes.draw do
     match ":agency_id/rentals/:object_id/availability" => "object#availability", :via => :get
   end
 
+  namespace :hub do
+    get "/:agency_id/sales/index"
+    get "/:agency_id/sales/create"
+    get "/:agency_id/sales/edit"
+    get "/:agency_id/sales/delete"
+    get "/:agency_id/sales/save"
+    get "/:agency_id/sales/trends"
+  end
+
   # routes for administration namespace
   namespace :admin do
     resources :languages
     resources :agency_users
     resources :agencies
 
+    # agencies module extensions. Sub routing
     match '/agencies/:id/infos' => "agency_infos#show", :method => :get
     match '/agencies/:id/infos/show' => "agency_infos#show", :method => :get
     match '/agencies/:id/infos/edit' => "agency_infos#edit", :method => :get
@@ -46,19 +57,31 @@ Ssv01::Application.routes.draw do
     match '/agencies/:id/infos/update' => "agency_infos#update", :method => :post
     match '/agencies/:id/infos/fetch' => "agency_infos#fetch", :method => :get
 
+    # geo manager module
+    get "geo_manager/list"
+    get "geo_manager/show"
+    get "geo_manager/edit"
+    get "geo_manager/create"
+    get "geo_manager/index"
+
+    # home controller
+    get "home/index"
+    get "home/home"
+
+    # connection controller
     match "/connection/" => "connection#index"
     match "/connection/index" => "connection#index"
     match "/connection/login" => "connection#login", :method => :post
     match "/connection/logout" => "connection#logout"
   end
 
-  get "home/index"
-  get "home/home"
-
-  get "api/documentation/index"
-  get "api/documentation/list"
-  get "api/documentation/resources"
-  get "api/documentation/streams"
+  # api namespace ...
+  namespace :api do
+    get "/documentation/index"
+    get "/documentation/list"
+    get "/documentation/resources"
+    get "/documentation/streams"
+  end
 
   # routes for account
   get "api/account/list"
@@ -90,13 +113,16 @@ Ssv01::Application.routes.draw do
     match "index/index" => "index#index"
   end
 
-  get "help/configuration"
-  get "help/languages"
-  get "help/privacy"
-  get "help/term_of_service"
-  get "help/tos"
-  get "help/term_of_use"
-  get "help/tou"
+  # routes for help module ...
+  namespace :help do
+    get "/configuration"
+    get "/languages"
+    get "/documents/privacy"
+    get "/documents/term_of_service"
+    get "/documents/tos"
+    get "/documents/term_of_use"
+    get "/documents/tou"
+  end
 
   get "account/list"
   get "account/summary"
@@ -138,6 +164,11 @@ Ssv01::Application.routes.draw do
 
   get "maintenance/index"
   get "maintenance/home"
+  get "maintenance/about"
+  get "maintenance/contact"
+
+  match "/about" => 'maintenance#about'
+  match "/contact" => "maintenance#contact"
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

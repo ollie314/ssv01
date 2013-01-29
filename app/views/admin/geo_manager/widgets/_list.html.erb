@@ -1,0 +1,21 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Iso</th>
+      <th>Nb cities</th>
+    </tr>
+  </thead>
+  <tbody>
+      <% @countries.each do |country| %>
+          <tr>
+            <td><%= link_to country.name, admin_geo_manager_edit_path %></td>
+            <td><%= country.iso %></td>
+            <td><%= country.cities.nil? ? "0" : country.cities.count %></td>
+            <td><%= link_to 'Show', country, :class => 'btn btn-info'%></td>
+            <td><%= link_to 'Edit', admin_geo_manager_edit_path(country), :class => 'btn btn-info' %></td>
+            <td><%= link_to 'Destroy', country, :class => 'btn btn-danger', method: :delete, data: {confirm: 'Are you sure?'} %></td>
+          </tr>
+      <% end %>
+  </tbody>
+</table>
