@@ -1,0 +1,132 @@
+[
+    {
+        "id": "132df8c8-f848-4075-9f1b-cb9a30a01b80",
+        "name": "Chalet les essert",
+        "kind" : "1",
+        "kind_description" : {
+            "en" : "Chalet",
+            "fr" : "Chalet"
+        },
+        "price" : 7800.00,
+        "price_range" : {
+            "min" : 7600.00,
+            "max" : 8300.00
+        },
+        "nb_rooms" : 2,
+        "nb_floor" : "na",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
+        "name": "Falaise 26",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 7250.00,
+        "price_range" : {
+            "min" : 7100.00,
+            "max" : 8900.00
+        },
+        "nb_rooms" : 1,
+        "nb_floor" : "1",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "88bd06f8-b579-4639-8ca5-02b68dfba343",
+        "name": "Entremont 09",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 7500.00,
+        "price_range" : {
+            "min" : 6900.00,
+            "max" : 7600.00
+        },
+        "nb_rooms" : 3,
+        "nb_floor" : "0",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "7bce56a9-4b31-439e-9bc4-d5117b06b530",
+        "name": "Montre Cristo 222",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 8500.00,
+        "price_range" : {
+            "min" : 7100.00,
+            "max" : 8900.00
+        },
+        "nb_rooms" : 1,
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "132df8c8-f848-4075-9f1b-cb9a30a01b80",
+        "name": "Chalet les essert",
+        "kind" : "1",
+        "kind_description" : {
+            "en" : "Chalet",
+            "fr" : "Chalet"
+        },
+        "price" : 9850.00,
+        "price_range" : {
+            "min" : 8400.00,
+            "max" : 12200.00
+        },
+        "nb_rooms" : 2,
+        "nb_floor" : "na",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
+        "name": "Falaise 26",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 8400.00,
+        "price_range" : {
+            "min" : 7100.00,
+            "max" : 8900.00
+        },
+        "nb_rooms" : 1,
+        "nb_floor" : "1",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "88bd06f8-b579-4639-8ca5-02b68dfba343",
+        "name": "Entremont 09",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 9200.00,
+        "price_range" : {
+            "min" : 8800.00,
+            "max" : 9400.00
+        },
+        "nb_rooms" : 3,
+        "nb_floor" : "0",
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    },
+    {
+        "id": "7bce56a9-4b31-439e-9bc4-d5117b06b530",
+        "name": "Montre Cristo 222",
+        "kind" : "2",
+        "kind_description" : {
+            "en" : "Appartment",
+            "fr" : "Appartement"
+        },
+        "price" : 850000.00,
+        "nb_rooms" : 1,
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+    }
+]

@@ -19,7 +19,7 @@ class Testing::SalesController < ApplicationController
 
   def search
     price_sensitivity = !(params[:min_price].nil? and params[:max_price].nil?)
-    min_price = !params[:min_price].nil? ? Float(params[Carri:min_price]) : 0
+    min_price = !params[:min_price].nil? ? Float(params[:min_price]) : 0
     max_price = !params[:max_price].nil? ? Float(params[:max_price]) : 999999999
 
     nb_rooms_sensitivity = !(params[:nb_rooms_min].nil? and params[:nb_rooms_max].nil?)
