@@ -25,6 +25,7 @@ Ssv01::Application.routes.draw do
     match ":agency_id/rentals/list" => "rentals#list", :via => :get
     match ":agency_id/rentals/search" => "rentals#search", :via => :get
 
+    match ":agency_id/rentals/:object_id" => "object#index", :via => :get
     match ":agency_id/rentals/:object_id/summary" => "object#summary", :via => :get
     match ":agency_id/rentals/:object_id/details" => "object#details", :via => :get
     match ":agency_id/rentals/:object_id/location" => "object#location", :via => :get
