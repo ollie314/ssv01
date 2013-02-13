@@ -10,7 +10,8 @@
         "price" : 985000.00,
         "nb_rooms" : 2,
         "nb_floor" : "na",
-        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
+        "new" : 1
     },
     {
         "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
