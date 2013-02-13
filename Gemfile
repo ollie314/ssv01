@@ -34,6 +34,8 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 
   gem 'timelineJS-rails'
+
+  gem 'rack-cors', :require => 'rack/cors' # install : gem install rack-cors
 end
 
 gem 'jquery-rails'

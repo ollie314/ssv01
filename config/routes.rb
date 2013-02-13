@@ -1,5 +1,9 @@
 Ssv01::Application.routes.draw do
 
+  get "agency/load"
+
+  get "agency/check"
+
   root :to => 'maintenance#index'
 
   # check following notation to achieve same result
@@ -36,12 +40,16 @@ Ssv01::Application.routes.draw do
   end
 
   namespace :hub do
-    get "/:agency_id/sales/index"
-    get "/:agency_id/sales/create"
-    get "/:agency_id/sales/edit"
-    get "/:agency_id/sales/delete"
-    get "/:agency_id/sales/save"
-    get "/:agency_id/sales/trends"
+    match "/:agency_id/sales" => "sales#index", :via => :get
+    match "/:agency_id/sales/index" => "sales#index", :via => :get
+    match "/:agency_id/sales/create" => "sales#create", :via => :get
+    match "/:agency_id/sales/edit" => "sales#edit", :via => :get
+    match "/:agency_id/sales/delete" => "sales#delete", :via => :get
+    match "/:agency_id/sales/save" => "sales#save", :via => :post
+    match "/:agency_id/sales/trends" => "sales#trends", :via => :get
+    match "/:agency_id/sales/objects/" => "object#index", :via => :get
+
+    match "/:agency_id/sales/test" => "sales#test", :via => :get
   end
 
   # routes for administration namespace
