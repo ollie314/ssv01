@@ -48,7 +48,9 @@
         },
         "nb_rooms" : 3,
         "nb_floor" : "0",
-        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
+        "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
+        "new" : 1
+
     },
     {
         "id": "7bce56a9-4b31-439e-9bc4-d5117b06b530",
