@@ -41,7 +41,8 @@ module CitiSoapLoader
       end
     end
 
-    def translate_for_list(obj)
+    def translate_for_list(obj, lang = nil)
+      lang ||= 'fr'
       result = {}
       ###
       #{
@@ -69,17 +70,19 @@ module CitiSoapLoader
       result[:sellable_to_foreigner] = obj["object_courtage_sellable_to_foreigners"]
       result[:reserved] = obj["object_courtage_reserved"]
       result[:kind] = get_kind(obj["object_type_label"])
-      result[:kind_description] = {"fr" => obj["object_type_label"]}
+      result[:kind_description] = {lang => obj["object_type_label"]}
       result
     end
 
-    def translate_for_summary(obj)
+    def translate_for_summary(obj, lang = mil)
+      lang ||= 'fr'
       result = {}
 
       result
     end
 
-    def translate_for_details(obj)
+    def translate_for_details(obj, lang = nil)
+      lang ||= 'fr'
       result = {}
       result[:id] = obj["object_id"]
       result[:name] = obj["object_name"]
@@ -91,10 +94,10 @@ module CitiSoapLoader
       result[:sellable_cat] = 1 # TODO : Find out the correct value
 
       result[:summary] = {
-          'fr' => obj["object_courtage_promo"]
+          lang => obj["object_courtage_promo"]
       }
       result[:description] = {
-          'fr' => obj["object_descriptions"]["object_description"]["translated_description"]
+          lang => obj["object_descriptions"]["object_description"]["translated_description"]
       }
 
       result[:properties] = list_properties obj

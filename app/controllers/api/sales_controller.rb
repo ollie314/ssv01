@@ -13,9 +13,12 @@ class Api::SalesController < ApplicationController
 
   def list
     agency_id = params[:agency_id]
+    lang = params[:hl]
+    lang ||= nil
 
     path = Uploads::Fs.get_cache_dir.join(String(agency_id), 'sales')
-    filename = path.to_s + "/list.json"
+    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + "list.json"
+
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       logger.debug("Filename is %s" % [obj])
@@ -34,6 +37,8 @@ class Api::SalesController < ApplicationController
   def search
     agency_id = params[:agency_id]
     translator = CitiSoapLoader::Translator.new
+    lang = params[:hl]
+    lang ||= nil
 
     price_sensitivity = !(params[:min_price].nil? and params[:max_price].nil?)
     min_price = !params[:min_price].nil? ? Float(params[:min_price]) : 0
@@ -43,7 +48,7 @@ class Api::SalesController < ApplicationController
     nb_rooms_min = !params[:nb_rooms_min].nil? ? Integer(params[:nb_rooms_min]) : 0
     nb_rooms_max = !params[:nb_rooms_max].nil? ? Integer(params[:nb_rooms_max]) : 999
 
-    @objects = load_objects agency_id
+    @objects = load_objects agency_id, lang
     @results = []
     @objects.each { |obj|
       if price_sensitivity and !(obj["price"] >= min_price and obj["price"] <= max_price)
@@ -52,7 +57,7 @@ class Api::SalesController < ApplicationController
       if nb_rooms_sensitivity and !(obj["nb_rooms"] >= nb_rooms_min and obj["nb_rooms"] <= nb_rooms_max)
         next
       end
-      obj_translated = translator.translate_for_list obj
+      obj_translated = translator.translate_for_list obj, lang
       @results.push(obj_translated)
     }
 
@@ -63,13 +68,15 @@ class Api::SalesController < ApplicationController
   def summary
     agency_id = params[:agency_id]
     object_id = params[:object_id]
+    lang = params[:hl]
+    lang ||= nil
 
     path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
-    filename = path.to_s + "/" + object_id + ".json"
+    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       translator = CitiSoapLoader::Translator.new
-      obj_translated = translator.translate_for_summary obj
+      obj_translated = translator.translate_for_summary obj, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
       @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
@@ -80,13 +87,16 @@ class Api::SalesController < ApplicationController
   def details
     object_id = params[:object_id]
     agency_id = params[:agency_id]
+    lang = params[:hl]
+    lang ||= nil
 
     path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
-    filename = path.to_s + "/" + object_id + ".json"
+    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
+    logger.debug filename
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       translator = CitiSoapLoader::Translator.new
-      obj_translated = translator.translate_for_details obj
+      obj_translated = translator.translate_for_details obj, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
       @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
@@ -118,9 +128,9 @@ class Api::SalesController < ApplicationController
 
   private
 
-  def load_objects(agency_id)
+  def load_objects(agency_id, lang = nil)
     path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
-    filename = path.to_s + "/list.json"
+    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + "list.json"
     @objects = JSON.parse(IO.read(filename))
   end
 
