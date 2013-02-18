@@ -1,5 +1,27 @@
 Ssv01::Application.routes.draw do
 
+  get "sales/index"
+
+  get "sales/search"
+
+  get "sales/summary"
+
+  get "sales/details"
+
+  get "sales/location"
+
+  get "sales/pictures"
+
+  get "sales/videos"
+
+  get "sales/cache"
+
+  get "sales/check"
+
+  get "sales/sync"
+
+  get "sales/resync"
+
   get "agency/load"
 
   get "agency/check"
@@ -52,6 +74,12 @@ Ssv01::Application.routes.draw do
     match "/:agency_id/sales/test" => "sales#test", :via => :get
   end
 
+  namespace :import do
+    match "/load_agency_info/:agency_id" => "agency#load_agency_info", :via => [:get, :post]
+    match "/fill_agency_info/:agency_id" => "agency#fill_agency_info", :via => :get
+    match "/check/:agency_id/:object_id" => "agency#check", :via => :get
+  end
+
   # routes for administration namespace
   namespace :admin do
     resources :languages
@@ -90,6 +118,32 @@ Ssv01::Application.routes.draw do
     get "/documentation/list"
     get "/documentation/resources"
     get "/documentation/streams"
+
+    match ":agency_id/sales/" => "sales#list", :via => :get
+    match ":agency_id/sales/list" => "sales#list", :via => :get
+    match ":agency_id/sales/search" => "sales#search", :via => :get
+
+    match ":agency_id/sales/:object_id" => "sales#index", :via => :get
+    match ":agency_id/sales/:object_id/summary" => "sales#summary", :via => :get
+    match ":agency_id/sales/:object_id/details" => "sales#details", :via => :get
+    match ":agency_id/sales/:object_id/location" => "sales#location", :via => :get
+    match ":agency_id/sales/:object_id/pictures" => "sales#pictures", :via => :get
+    match ":agency_id/sales/:object_id/videos" => "sales#videos", :via => :get
+
+    match ":agency_id/rentals/" => "rentals#list", :via => :get
+    match ":agency_id/rentals/list" => "rentals#list", :via => :get
+    match ":agency_id/rentals/search" => "rentals#search", :via => :get
+
+    match ":agency_id/rentals/:object_id" => "object#index", :via => :get
+    match ":agency_id/rentals/:object_id/summary" => "object#summary", :via => :get
+    match ":agency_id/rentals/:object_id/details" => "object#details", :via => :get
+    match ":agency_id/rentals/:object_id/location" => "object#location", :via => :get
+    match ":agency_id/rentals/:object_id/pictures" => "object#pictures", :via => :get
+    match ":agency_id/rentals/:object_id/videos" => "object#videos", :via => :get
+    match ":agency_id/rentals/:object_id/pricing" => "object#pricing", :via => :get
+    match ":agency_id/rentals/:object_id/availability" => "object#availability", :via => :get
+
+
   end
 
   # routes for account

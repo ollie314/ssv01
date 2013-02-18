@@ -1,2 +1,130 @@
-<h1>Hub::Sales#create</h1>
-<p>Find me in app/views/hub/sales/create.html.erb</p>
+<div class="page-header">
+  <h1 class="well">Object manager</h1>
+</div>
+<div class="alert alert-info hidden-phone">
+  <button type="button" class="close" data-dismiss="alert">×</button>
+  Welcome in the object manager
+</div>
+<p class="lead">This section allows you to manage specific object saled by your agency</p>
+<div class="row-fluid">
+  <div class="pull-right">
+    <ul class="nav nav-tabs">
+      <li class="active">
+        <a href="#home" data-toggle="tab">Dashboard</a>
+      </li>
+      <li>
+        <a href="#profile" data-toggle="tab">General information</a>
+      </li>
+      <li>
+        <a href="#messages" data-toggle="tab">Messages</a>
+      </li>
+      <li>
+        <a href="#settings" data-toggle="tab">Settings</a>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="row-fluid">
+  <div class="span2"></div>
+  <div class="span4">
+    <div class="well draggable">
+      <h4>Edit info</h4>
+
+      <p></p>
+    </div>
+    <div id="" class="well draggable">
+      <h4>Exporting HTML</h4>
+
+      <p>Divshot is built to give you usable code. Just click the "Export Code"
+        button in the top toolbar.</p>
+    </div>
+  </div>
+  <div class="span4">
+    <div class="well draggable">
+      <h4>Edit info</h4>
+
+      <p></p>
+    </div>
+    <div class="well draggable">
+      <h4>Exporting HTML</h4>
+
+      <p>Divshot is built to give you usable code. Just click the "Export Code"
+        button in the top toolbar.</p>
+    </div>
+  </div>
+  <div class="span2"></div>
+</div>
+<div class="row-fluid">
+  <div class="span2"></div>
+  <div class="well span8" id="pictureDropBox">
+        <span class="message">
+            Drop images here to upload.
+            <br>
+            <i>(You can edit information right after dragging)</i>
+        </span>
+  </div>
+  <div class="span2"></div>
+</div>
+<hr/>
+<div class="row-fluid sortable-container">
+  <div class="span2"></div>
+  <ul class="span4 sortable" id="sortable1">
+    <li class="ui-state-default">
+      <div class="row-fluid">
+        <div class="span12 well">First item</div>
+      </div>
+    </li>
+    <li class="ui-state-default">
+      <div class="well">
+        <div class="row-fluid">
+          <div class="span3">
+            <img id="imagePreview" name="imagePreview1" src="http://placehold.it/100x100">
+          </div>
+          <div class="span8">
+            <h4>Image information</h4>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span2"></div>
+          <div class="span8">
+            <h6>Information</h6>
+            <label>Name</label>
+            <input name="name" class="input input-block-level" type="text" placeholder="Name of the picture">
+            <label>Label</label>
+            <input name="label" class="input input-block-level" type="text" placeholder="Label of the picture">
+            <label>Caption</label>
+            <textarea name="caption" class="input-block-level" placeholder="Caption to display below the picture"></textarea>
+          </div>
+          <div class="span2"></div>
+        </div>
+        <div class="btn-group pull-right">
+          <a class="btn btn-warning">Cancel</a>
+          <a class="btn btn-primary">Save</a>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </li>
+    <li class="ui-state-default">
+      <div class="row-fluid">
+        <div class="span12 well">Third item</div>
+      </div>
+    </li>
+  </ul>
+  <ul class="span4 sortable" id="sortable2">
+    <li class="ui-state-default">
+      <div class="row-fluid">
+        <div class="span12 well">First item</div>
+      </div>
+    </li>
+    <li class="ui-state-default">
+      <div class="row-fluid">
+        <div class="span12 well">Second item</div>
+      </div>
+    </li>
+    <li class="ui-state-default">
+      <div class="row-fluid">
+        <div class="span12 well">Third item</div>
+      </div>
+    </li>
+  </ul>
+</div>

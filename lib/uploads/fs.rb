@@ -1,6 +1,39 @@
 module Uploads
   module Fs
     class << self
+
+      def get_public_dir
+        Rails.root.join('public').to_s
+      end
+
+      def get_upload_dir
+        Rails.root.join('public', 'uploads')
+      end
+
+      def get_cache_dir
+        path = Rails.root.join('public', 'cache')
+        if(!Dir.exists?(path))
+          FileUtils.mkdir_p path
+        end
+        path
+      end
+
+      def setup_cache_dir(agency_id)
+        path = Rails.root.join('public', 'cache', String(agency_id))
+        if(!Dir.exists?(path))
+          FileUtils.mkdir_p path
+        end
+        path
+      end
+
+      def create_if_not_exists(path, endpoint)
+        _path = path.join(endpoint)
+        if(!Dir.exists?(_path))
+          FileUtils.mkdir_p _path
+        end
+        _path
+      end
+
       def flush_dir_for_agency(agency_id)
         true
       end

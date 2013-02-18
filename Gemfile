@@ -36,6 +36,8 @@ group :assets do
   gem 'timelineJS-rails'
 
   gem 'rack-cors', :require => 'rack/cors' # install : gem install rack-cors
+  gem 'geoutm' # install gem install geoutm
+  gem 'savon'
 end
 
 gem 'jquery-rails'
