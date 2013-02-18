@@ -285,49 +285,79 @@ module CitiSoapLoader
     def list_image(obj)
       images = []
       exts = ['.jpg', '.png', '.jpeg', '.gif']
-      obj["object_images"]["object_image"].each { |img|
-        _img = create_image_info img
+      if obj["object_images"]["object_image"].class == Array.class
+        obj["object_images"]["object_image"].each { |img|
+          _img = create_image_info img
+          if exts.include? _img[:ext] || img[:kind] == 1
+            images.push _img
+          end
+        }
+      else
+        _img = create_image_info obj["object_images"]["object_image"]
         if exts.include? _img[:ext] || img[:kind] == 1
           images.push _img
         end
-      }
+      end
       images
     end
 
     def list_docs(obj)
       plans = []
       exts = ['.pdf']
-      obj["object_images"]["object_image"].each { |item|
-        _img = create_image_info item
+
+      if obj["object_images"]["object_image"].class == Array.class
+        obj["object_images"]["object_image"].each { |item|
+          _img = create_image_info item
+          if exts.include? _img[:ext]
+            _img[:kind] = 4
+            plans.push _img
+          end
+        }
+      else
+        _img = create_image_info obj["object_images"]["object_image"]
         if exts.include? _img[:ext]
           _img[:kind] = 4
           plans.push _img
         end
-      }
+      end
       plans
     end
 
     def list_plans(obj)
       plans = []
-      exts = ['.pdf']
-      obj["object_images"]["object_image"].each { |item|
-        _img = create_image_info item
+      if obj["object_images"]["object_image"].class == Array.class
+        obj["object_images"]["object_image"].each { |item|
+          _img = create_image_info item
+          if _img[:kind] == 1
+            plans.push _img
+          end
+        }
+      else
+        _img = create_image_info obj["object_images"]["object_image"]
         if _img[:kind] == 1
           plans.push _img
         end
-      }
+      end
       plans
     end
 
     def list_videos(obj)
       videos = []
-      obj["object_images"]["object_image"].each { |item|
-        #video_url = 'http://www.youtube.com/embed/'
-        video = create_image_info item
+
+      if obj["object_images"]["object_image"].class == Array.class
+        obj["object_images"]["object_image"].each { |item|
+          #video_url = 'http://www.youtube.com/embed/'
+          video = create_image_info item
+          if video[:kind] == 3
+            videos.push video
+          end
+        }
+      else
+        video = create_image_info obj["object_images"]["object_image"]
         if video[:kind] == 3
           videos.push video
         end
-      }
+      end
       videos
     end
 
