@@ -45,14 +45,15 @@ module CitiSoapLoader
       lang ||= 'fr'
       result = {}
       ###
+      # Entry format ...
       #{
       #    "id": "b8295852-3b4c-4bbf-960a-c8d57d4677b8",
       #    "name": "Falaise 26",
       #    "kind" : "2",
       #    "kind_description" : {
-      #    "en" : "Appartment",
-      #    "fr" : "Appartement"
-      #},
+      #         "en" : "Appartment",
+      #         "fr" : "Appartement"
+      #       },
       #    "price" : 240000.00,
       #    "nb_rooms" : 1,
       #    "nb_floor" : "1",
@@ -288,7 +289,7 @@ module CitiSoapLoader
     def list_image(obj)
       images = []
       exts = ['.jpg', '.png', '.jpeg', '.gif']
-      if obj["object_images"]["object_image"].class == Array.class
+      if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |img|
           _img = create_image_info img
           if exts.include? _img[:ext] || img[:kind] == 1
@@ -308,7 +309,7 @@ module CitiSoapLoader
       plans = []
       exts = ['.pdf']
 
-      if obj["object_images"]["object_image"].class == Array.class
+      if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
           _img = create_image_info item
           if exts.include? _img[:ext]
@@ -328,7 +329,7 @@ module CitiSoapLoader
 
     def list_plans(obj)
       plans = []
-      if obj["object_images"]["object_image"].class == Array.class
+      if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
           _img = create_image_info item
           if _img[:kind] == 1
@@ -347,7 +348,7 @@ module CitiSoapLoader
     def list_videos(obj)
       videos = []
 
-      if obj["object_images"]["object_image"].class == Array.class
+      if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
           #video_url = 'http://www.youtube.com/embed/'
           video = create_image_info item
