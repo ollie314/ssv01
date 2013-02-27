@@ -3,19 +3,132 @@ require 'uploads/fs'
 
 module CitiSoapLoader
 
-  class Cache
+  class Target
+    SALES = 'sales'
+    RENTALS = 'rentals'
+    ORPHANS = 'orphans'
+  end
 
+  class Indexer
+
+    def initialize(path = nil)
+      path ||= Uploads::Fs.get_cache_dir
+      if path.class == String
+        path = Pathname.new(path)
+      end
+      @path = path
+    end
+
+    def create_index(agency_id, target)
+      index_filename = 'index_props'
+      index_filename_ext = 'json'
+      index_pathname = "%s.%s" % [index_filename, index_filename_ext]
+      index = {}
+      translator = Translator.new
+      case target
+        when Target::SALES
+          leaf_container = 'sales'
+        when Target::RENTALS
+          leaf_container = 'rentals'
+        else
+          leaf_container = Target::ORPHANS
+      end
+      cache = Cache.new agency_id, leaf_container
+      parent_path = @path.join(String(agency_id), target)
+      files = parent_path.children false
+      file_to_exclude =  ['list.json', 'en_list.json', index_pathname]
+
+      files.each{ |f|
+        next unless !file_to_exclude.include? f.to_s and is_valid_file? f.to_s
+        _fname = f.absolute? ? f.to_s : parent_path.to_s + File::SEPARATOR + f.to_s
+        cur_obj = JSON.parse(IO.read(_fname))
+        index[cur_obj['object_id']] = get_props cur_obj, translator
+      }
+
+      cache.store index_filename, index_filename_ext, index
+      true
+    end
+
+    private
+    def get_props(obj, translator)
+      props = {}
+      props['images'] = translator.list_image(obj).size
+      props['plans'] = translator.list_plans(obj).size
+      props['docs'] = translator.list_docs(obj).size
+      props['videos'] = translator.list_videos(obj).size
+      props
+    end
+
+    def is_valid_file?(filename)
+      r = /^en_(?<id>\d+)\.json$/
+      md = r.match filename
+      md.nil?
+    end
+  end
+
+  class Cache
+    # constructor for the cache object
     def initialize(agency_id, endpoint)
       path = Uploads::Fs.setup_cache_dir(agency_id)
       Uploads::Fs.create_if_not_exists(path, endpoint)
       @rep = path.join(endpoint)
     end
 
+    # store data into the cache
     def store(filename, extension, data)
       f_cache = File.new("%s/%s.%s" % [@rep.to_s, filename, extension], 'w')
-      json_object = JSON.dump(data, f_cache)
+      JSON.dump(data, f_cache)
       f_cache.flush
       f_cache.close
+      true
+    end
+
+    # load a specific file from the cache
+    def load(filename)
+      _fname = @rep.to_s + File::SEPARATOR + filename
+      {} unless File.exists? _fname
+      JSON.parse(IO.read _fname)
+    end
+
+    # drop a specific file from the cache
+    def drop(filename)
+      _fname = @rep.to_s + File::SEPARATOR + filename
+      false unless File.exists? _fname
+      begin
+        if File.directory? _fname
+          FileUtils.rmtree _fname
+        else
+          File.delete _fname
+        end
+        true
+      rescue
+        false
+      end
+    end
+
+    # clear first level files from the cache
+    def clear_files
+      cpt = 0
+      @rep.children(false).each{ |file|
+        next unless drop @rep.to_s + File::SEPARATOR + file
+        cpt += 1
+      }
+      cpt
+    end
+
+    # clear all files from the cache and keep agency root path in place
+    def clear_all
+      cpt = 0
+      @rep.children.each{ |file|
+        next unless drop @rep.to_s + File::SEPARATOR + file
+        cpt += 1
+      }
+      cpt
+    end
+
+    # check if a specific file exists into the cache
+    def exists?(filename)
+      File.exists? @rep.to_s + File::SEPARATOR + filename
     end
 
   end
@@ -23,7 +136,7 @@ module CitiSoapLoader
   class Translator
 
     def initialize
-
+      # nothing to do right now
     end
 
     def get_kind(obj_kind_label)
@@ -41,7 +154,7 @@ module CitiSoapLoader
       end
     end
 
-    def translate_for_list(obj, lang = nil)
+    def translate_for_list(obj, index = nil, lang = nil)
       lang ||= 'fr'
       result = {}
       ###
@@ -54,24 +167,31 @@ module CitiSoapLoader
       #         "en" : "Appartment",
       #         "fr" : "Appartement"
       #       },
+      #    "attachments" : {
+      #       images : 8,
+      #       plans : 1,
+      #       videos : 0,
+      #       docs : 1
+      #     },
       #    "price" : 240000.00,
       #    "nb_rooms" : 1,
       #    "nb_floor" : "1",
       #    "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
       #},
       ###
-      result[:id] = obj["object_id"]
-      result[:name] = obj["object_name"]
-      result[:nb_room] = obj["object_number_of_rooms"]
-      result[:nb_floor] = obj["object_number_of_rooms"]
-      result[:picture] = obj["thumb_nail_url"]
-      result[:price] = obj["object_courtage_selling_price"]
-      result[:new] = obj["object_courtage_is_new"]
-      result[:reserved] = obj["object_courtage_reserved"]
-      result[:sellable_to_foreigner] = obj["object_courtage_sellable_to_foreigners"]
-      result[:reserved] = obj["object_courtage_reserved"]
-      result[:kind] = get_kind(obj["object_type_label"])
-      result[:kind_description] = {lang => obj["object_type_label"]}
+      result[:id]                     = obj["object_id"]
+      result[:name]                   = obj["object_name"]
+      result[:nb_room]                = obj["object_number_of_rooms"]
+      result[:nb_floor]               = obj["object_number_of_rooms"]
+      result[:picture]                = obj["thumb_nail_url"]
+      result[:price]                  = obj["object_courtage_selling_price"]
+      result[:new]                    = obj["object_courtage_is_new"]
+      result[:reserved]               = obj["object_courtage_reserved"]
+      result[:sellable_to_foreigner]  = obj["object_courtage_sellable_to_foreigners"]
+      result[:reserved]               = obj["object_courtage_reserved"]
+      result[:kind]                   = get_kind obj["object_type_label"]
+      result[:kind_description]       = {lang => obj["object_type_label"]}
+      result[:attachments]            = index[obj["object_id"]]
       result
     end
 
@@ -115,8 +235,6 @@ module CitiSoapLoader
       result[:location] = create_location obj
       result
     end
-
-    private
 
     def create_address(item)
       address = {

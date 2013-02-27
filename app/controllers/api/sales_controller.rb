@@ -15,17 +15,19 @@ class Api::SalesController < ApplicationController
     agency_id = params[:agency_id]
     lang = params[:hl]
     lang ||= nil
+    cache = CitiSoapLoader::Cache.new agency_id, CitiSoapLoader::Target::SALES
 
     path = Uploads::Fs.get_cache_dir.join(String(agency_id), 'sales')
     filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + "list.json"
 
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
+      index = cache.load 'index_props.json'
       logger.debug("Filename is %s" % [obj])
       translator = CitiSoapLoader::Translator.new
       objs = []
       obj.each{ |item|
-        objs.push translator.translate_for_list item
+        objs.push translator.translate_for_list item, index, lang
       }
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => objs}}
     else
