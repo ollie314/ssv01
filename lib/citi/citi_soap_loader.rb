@@ -1,5 +1,6 @@
 require 'savon/client'
 require 'uploads/fs'
+require 'open-uri'
 
 module CitiSoapLoader
 
@@ -19,30 +20,34 @@ module CitiSoapLoader
       @path = path
     end
 
-    def create_index(agency_id, target)
-      index_filename = 'index_props'
-      index_filename_ext = 'json'
-      index_pathname = "%s.%s" % [index_filename, index_filename_ext]
+    def create_index(agency_id, target, index_filename = 'index_props', index_filename_ext = 'json')
+      index_pathname = "%s_%s.%s" % [index_filename, target, index_filename_ext]
       index = {}
       translator = Translator.new
       case target
         when Target::SALES
-          leaf_container = 'sales'
+          leaf_container = Target::SALES
         when Target::RENTALS
-          leaf_container = 'rentals'
+          leaf_container = Target::RENTALS
         else
           leaf_container = Target::ORPHANS
       end
       cache = Cache.new agency_id, leaf_container
       parent_path = @path.join(String(agency_id), target)
       files = parent_path.children false
-      file_to_exclude =  ['list.json', 'en_list.json', index_pathname]
+      file_to_exclude = ['fr_list.json', 'en_list.json', index_pathname]
 
-      files.each{ |f|
-        next unless !file_to_exclude.include? f.to_s and is_valid_file? f.to_s
+      files.each { |f|
+        next unless !File.directory? f.to_s and !file_to_exclude.include? f.to_s and is_valid_file? f.to_s
         _fname = f.absolute? ? f.to_s : parent_path.to_s + File::SEPARATOR + f.to_s
         cur_obj = JSON.parse(IO.read(_fname))
-        index[cur_obj['object_id']] = get_props cur_obj, translator
+        case target
+          when 'rentals'
+            id_key = 'id_object_location'
+          when 'sales'
+            id_key = 'object_id'
+        end
+        index[cur_obj[id_key]] = get_props cur_obj, translator
       }
 
       cache.store index_filename, index_filename_ext, index
@@ -90,6 +95,81 @@ module CitiSoapLoader
       JSON.parse(IO.read _fname)
     end
 
+    def load_image(filename)
+      _fname = @rep.join('images').to_s + File::SEPARATOR + filename
+      {} unless File.exists? _fname
+      _fname
+    end
+
+    def drop_image(filename)
+      _fname = @rep.join('images').to_s + File::SEPARATOR + filename
+      false unless File.exists? _fname
+      begin
+        if File.directory? _fname
+          false
+        else
+          File.delete _fname
+          true
+        end
+      rescue
+        false
+      end
+    end
+
+    def store_image_for_list(thumb)
+      begin
+        path = Uploads::Fs.create_path_if_not_exists @rep.join('images', 'list')
+        _th = Uploads::Helper::clean_url File.basename thumb
+        open(File.dirname(thumb) + "/" + _th) { |f|
+          image_name = path.to_s + File::SEPARATOR + File.basename(thumb)
+          File.open(image_name, 'wb') do |file|
+            file.puts f.read
+          end
+        }
+        true
+      rescue
+        false
+      end
+    end
+
+    def delete_image_cache_rep_for_item_id(item_id)
+      begin
+        path = @rep.join('images', item_id).to_s
+        false unless Dir.exists path
+        FileUtils.rmtree path
+        true
+      rescue
+        false
+      end
+    end
+
+    def delete_image_cache_rep_for_item(item)
+      return delete_image_cache_rep_for_item_id item[:object_id]
+    end
+
+    def cache_image_by_url(item, url, target = 'sales')
+      begin
+        case target
+          when 'rentals'
+            id_key = "id_object_location"
+          when 'sales'
+            id_key = "object_id"
+        end
+        path = Uploads::Fs.create_if_not_exists @rep.join('images'), item[id_key]
+        _th = Uploads::Helper::clean_url File.basename url
+        open(File.dirname(url) + "/" + _th) { |f|
+          image_name = path.to_s + File::SEPARATOR + File.basename(url)
+          File.open(image_name, 'wb') do |file|
+            file.puts f.read
+          end
+        }
+        true
+      rescue Exception => e
+        e.message
+        false
+      end
+    end
+
     # drop a specific file from the cache
     def drop(filename)
       _fname = @rep.to_s + File::SEPARATOR + filename
@@ -109,7 +189,7 @@ module CitiSoapLoader
     # clear first level files from the cache
     def clear_files
       cpt = 0
-      @rep.children(false).each{ |file|
+      @rep.children(false).each { |file|
         next unless drop @rep.to_s + File::SEPARATOR + file
         cpt += 1
       }
@@ -119,9 +199,31 @@ module CitiSoapLoader
     # clear all files from the cache and keep agency root path in place
     def clear_all
       cpt = 0
-      @rep.children.each{ |file|
+      @rep.children.each { |file|
         next unless drop @rep.to_s + File::SEPARATOR + file
         cpt += 1
+      }
+      cpt
+    end
+
+    # clean details files for an object from the cache. delete json file and images
+    def clean_details(object_list)
+      0 unless !(object_list.nil? or object_list.length == 0)
+      ids = []
+      object_list.each { |item|
+        ids.push item['object_id']
+      }
+      cpt = 0
+      @rep.children.each { |file|
+        basename = File.basename(file, ".json")
+        next unless !File.directory? file or ids.includes? basename
+        begin
+          File.delete file
+          delete_image_cache_rep_for_item_id basename
+          cpt += 1
+        rescue
+          next
+        end
       }
       cpt
     end
@@ -130,7 +232,6 @@ module CitiSoapLoader
     def exists?(filename)
       File.exists? @rep.to_s + File::SEPARATOR + filename
     end
-
   end
 
   class Translator
@@ -179,20 +280,202 @@ module CitiSoapLoader
       #    "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
       #},
       ###
-      result[:id]                     = obj["object_id"]
-      result[:name]                   = obj["object_name"]
-      result[:nb_room]                = obj["object_number_of_rooms"]
-      result[:nb_floor]               = obj["object_number_of_rooms"]
-      result[:picture]                = obj["thumb_nail_url"]
-      result[:price]                  = obj["object_courtage_selling_price"]
-      result[:new]                    = obj["object_courtage_is_new"]
-      result[:reserved]               = obj["object_courtage_reserved"]
-      result[:sellable_to_foreigner]  = obj["object_courtage_sellable_to_foreigners"]
-      result[:reserved]               = obj["object_courtage_reserved"]
-      result[:kind]                   = get_kind obj["object_type_label"]
-      result[:kind_description]       = {lang => obj["object_type_label"]}
-      result[:attachments]            = index[obj["object_id"]]
+      result[:id] = obj["object_id"]
+      result[:name] = obj["object_name"]
+      result[:nb_room] = obj["object_number_of_rooms"]
+      result[:nb_floor] = obj["object_number_of_rooms"]
+      result[:cover] = obj["thumb_nail_url"]
+      result[:price] = obj["object_courtage_selling_price"]
+      result[:new] = obj["object_courtage_is_new"]
+      result[:reserved] = obj["object_courtage_reserved"]
+      result[:sellable_to_foreigner] = obj["object_courtage_sellable_to_foreigners"]
+      result[:reserved] = obj["object_courtage_reserved"]
+      result[:kind] = get_kind obj["object_type_label"]
+      result[:kind_description] = {lang => obj["object_type_label"]}
+      result[:attachments] = index[obj["object_id"]] unless index.nil?
       result
+    end
+
+    def translate_for_list_rentals(obj, index = nil, lang = nil)
+      lang ||= 'fr'
+      result = {}
+      result[:id] = obj["id_object_location"]
+      result[:name] = obj["object_name"]
+      result[:floor_size] = obj["floor_size"]
+      result[:number_of_rooms] = obj["number_of_rooms"]
+      result[:number_of_bedrooms] = obj["number_of_bedrooms"]
+      result[:number_of_bathrooms] = obj["number_of_bathrooms"]
+      result[:cover] = obj["thumb_nail_url"]
+      result[:kind] = obj["id_object_type"]
+      result[:kind_description] = get_kind obj["object_type_name"]
+      result[:attachments] = index[obj["object_id"]] unless index.nil?
+      result
+    end
+
+    def translate_for_details_rentals(obj, lang = nil)
+      lang ||= 'fr'
+      result = {}
+      result[:id] = obj["id_object_location"]
+      result[:name] = obj["object_name"]
+      result[:floor_size] = obj["floor_size"]
+      result[:number_of_rooms] = obj["number_of_rooms"]
+      result[:cover] = obj["thumb_nail_url"]
+      result[:kind] = obj["id_object_type"]
+      result[:kind_description] = get_kind obj["object_type_name"]
+
+      result[:properties] = list_properties_rentals obj
+      result[:attachments] = create_list_attachments obj
+
+      result[:address] = create_address obj
+      result[:location] = create_location obj
+
+      result
+    end
+
+    def list_properties_rentals(item)
+      properties = []
+      handled = [
+          "has_washingmachine",
+          "has_drying_room",
+          "has_dryer",
+          "has_heating",
+          "has_air_condition",
+          "has_elevator",
+          "has_recreational_room",
+          "has_storage",
+          "has_sauna",
+          "has_sun_bed",
+          "has_indoor_pool",
+          "has_whirlpool",
+          "has_steam_bath",
+          "floor_size",
+          "number_of_rooms",
+          "number_of_bedrooms",
+          "number_of_bathrooms",
+          "number_of_toilets",
+          "max_number_of_babies",
+          "min_number_of_babies",
+          "max_number_of_children",
+          "min_number_of_children",
+          "max_number_of_adults",
+          "min_number_of_adults",
+          "max_number_of_seniors",
+          "min_number_of_seniors",
+          "max_number_of_persons",
+          "min_number_of_persons",
+          "additional_number_of_children",
+          "has_snow_cleaning",
+          "has_gardener",
+          "has_separate_garbage_collection",
+          "has_compost",
+          "has_quality_seal",
+          "is_protected_building",
+          "year",
+          "has_additional_room",
+          "has_tv_receiver",
+          "is_family_friendly",
+          "has_kitchen_material",
+          "is_windows_intact",
+          "is_furniture_intact",
+          "is_devices_intact",
+          "is_floor_and_walls_intact",
+          "is_bathtube_and_washbasin_intact",
+          "is_lighting_intact",
+          "is_temperature_ok",
+          "is_inscription_intact",
+          "is_mattresses_intact",
+          "is_hot_water_intact",
+          "is_place_without_cars",
+          "has_laundry_service",
+          "has_eu_environtment_seal",
+          "has_farm_holiday_seal",
+          "has_lost_item_return",
+          "has_welcome_gift",
+          "price_bed_sheets",
+          "price_kitchen_towel",
+          "price_bath_towels",
+          "price_final_cleaning",
+          "price_parking",
+          "price_bail",
+          "price_handling_charge",
+          "is_tourist_tax_included",
+          "has_response_to_inquiries_within2_working_days",
+          "has_everything_on_the_offer",
+          "has_information_about_information_center",
+          "is_the_contracts_in_writing",
+          "has_important_phone_number_list",
+          "has_personal_contact_in_the_first24_hours",
+          "has_noise",
+          "label_route_description",
+          "label_detail_url",
+          "label_booking_url",
+          "label_availability_url",
+          "label_promo_internet",
+          "label_remark",
+          "label_final_cleaning",
+          "label_kitchen_towels",
+          "label_bath_towels",
+          "label_tourist_tax",
+          "label_parking",
+          "label_pets",
+          "label_annulation_insurance",
+          "label_bail",
+          "label_handling_charge",
+          "label_wet_room_specials",
+          "label_kitchen_specials",
+          "label_special_services",
+          "label_price_specials",
+          "has_video",
+          "has_dvd",
+          "has_cd",
+          "has_telephone", "is_pet_allowed",
+          "is_non_smoking",
+          "is_sleeping_room",
+          "has_dining_table",
+          "has_arm_chair",
+          "has_fire_place",
+          "number_of_hotplates",
+          "has_oven",
+          "has_vent",
+          "has_microwave",
+          "has_dish_washer",
+          "has_fridge",
+          "has_private_beach",
+          "has_jetty",
+          "has_playground",
+          "has_garden_furniture",
+          "has_barbecue"
+      ]
+
+      booleans = [FalseClass, TrueClass]
+      item.keys.each { |k|
+        if !handled.include? k
+          next
+        end
+        v = item[k]
+        t = item[k].class
+        if nil === v
+          t = "null"
+        else
+          if booleans.include? t
+            t = "boolean"
+          else
+            if !nan? v
+              t = (Float(v).nan? || v.index('.').nil?) ? "number" : "float"
+            else
+              t = t.to_s.downcase
+            end
+
+          end
+        end
+        _prop = {
+            :key => k,
+            :value => v,
+            :type => t
+        }
+        properties.push _prop
+      }
+      properties
     end
 
     def translate_for_summary(obj, lang = mil)
@@ -255,7 +538,7 @@ module CitiSoapLoader
     end
 
     def create_location(item)
-      coords = item["object_gps_coordinates"] # example : #46#05#29.25|#7#13#53.63"
+      coords = item["object_gps_coordinates"].nil? ? item["gps_coordinates"] : item["object_gps_coordinates"] # example : #46#05#29.25|#7#13#53.63"
       parts = coords.split(/([^#\|]+)/)
       long = []
       lat = []
@@ -277,12 +560,24 @@ module CitiSoapLoader
     end
 
     def create_image_info(img)
+      img_url = (img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]).gsub(/\\+/, '/')
       image = {
-          url: "http://www.rentalp.ch/ObjectImages/" + img["unc_path_source"].gsub(/\\+/, '/'),
-          caption: img["label_title"],
-          description: img["label_description"],
-          kind: img["object_image_courtage_type"],
-          ext: File.extname(img["unc_path_source"])
+          url: "http://www.rentalp.ch/ObjectImages/" + img_url,
+          caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
+          description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
+          kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
+          ext: File.extname(img_url)
+      }
+    end
+
+    def create_image_info_from_cache(img, item)
+      _img = img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]
+      image = {
+          url: "http://www.rentalp.ch/ObjectImages/" + File.basename(_img).gsub(/\\+/, '/'),
+          caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
+          description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
+          kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
+          ext: File.extname(_img)
       }
     end
 
@@ -416,9 +711,7 @@ module CitiSoapLoader
         }
       else
         _img = create_image_info obj["object_images"]["object_image"]
-        if exts.include? _img[:ext] || img[:kind] == 1
-          images.push _img
-        end
+        images.push _img unless !exts.include? _img[:ext] || img[:kind] != 1
       end
       images
     end
@@ -502,27 +795,32 @@ module CitiSoapLoader
 
   class Connection
 
+    WSDL_API_V1 = "http://wspublication.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL"
+    WSDL_API_V2 = "http://wspublicationv2.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL"
+
     # constructor
-    def initialize
-      @wsdl = "http://wspublication.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL"
+    def initialize(endpoint_wsdl)
+      endpoint_wsdl ||= WSDL_API_V1
+      @wsdl = endpoint_wsdl
       @client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
     end
 
     #connection
-    def connect(channelId, username, password)
+    def connect(channel_id, username, password)
+      channel_id ||= 3
       message = {
-          "channelId" => 3,
+          "channelId" => channel_id,
           "channelUserName" => username,
           "channelUserPwd" => password}
       response = @client.call(:connect_channel, message: message)
 
-      session_id = response.to_hash[:connect_channel_response][:connect_channel_result];
+      session_id = response.to_hash[:connect_channel_response][:connect_channel_result]
     end
 
     # check connection
     def is_connected(session_id)
       message = {"sessionKey" => session_id}
-      response = @client.call(:is_connected, message)
+      response = @client.call(:is_connected, message: message)
 
       is_connected = response.to_hash[:is_connected_response][:is_connected_result]
     end
@@ -536,24 +834,104 @@ module CitiSoapLoader
     end
 
     #obtain default language
-    def get_default_language(session_id)
+    def get_default_language(session_id, channel_id, username, password)
+      if !is_connected session_id
+        connect channel_id, username, password
+      end
       message = {"sessionKey" => session_id}
-      response = @client.call(:get_default_language, message)
+      response = @client.call(:get_default_language, message: message)
 
       result = response.to_hash[:get_default_language_response][:get_default_language_result]
     end
 
     #define default language for next transaction
-    def set_default_language(session_id, lang)
+    def set_default_language(session_id, lang, channel_id, username, password)
+      if !is_connected session_id
+        connection channel_id, username, password
+      end
       message = {"sessionKey" => session_id, "languageId" => lang}
-      response = @client.call(:set_default_language, message)
+      response = @client.call(:set_default_language, message: message)
 
       result = response.to_hash[:set_default_language_response][:set_default_language_result]
     end
   end
 
+  class Rentals
+
+    attr_accessor :channel_id, :username, :password, :default_lang
+
+    DEFAULT_LANG = 'fr'
+    WSDL_API_V2 = "http://wspublicationv2.rentalp.ch/CITI_WS_OBJECTLOCATION.asmx?WSDL"
+
+    # constructor
+    def initialize(session_id, agency_id, lang = nil, thumbnail_width = 640, thumbnail_height = 480)
+      lang ||= DEFAULT_LANG
+      @session_id = session_id
+      @thumbnail_width = thumbnail_width
+      @thumbnail_height = thumbnail_height
+      @agency_id = agency_id
+      @default_lang = lang || DEFAULT_LANG
+      @wsdl = WSDL_API_V2
+      @client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
+    end
+
+    def load_list(lang = nil)
+      lang ||= @default_lang
+
+      set_default_lang lang
+
+      message = {
+          "sessionKey" => @session_id,
+          "ThumbNailWidth" => @thumbnail_width,
+          "ThumNailHeight" => @thumbnail_height,
+          "nIdMainObjectType" => 0,
+          "nIdObjectType" => -1
+      }
+
+      response = @client.call(:get_object_location_list_simple, message: message)
+
+      # Array of [:object_location_simple]
+      response.to_hash[:get_object_location_list_simple_response][:get_object_location_list_simple_result][:object_location_simple]
+    end
+
+    def load_details(obj_id, lang = nil)
+      lang ||= @default_lang
+
+      set_default_lang lang
+
+      message = {
+          "sessionKey" => @session_id,
+          "objectLocationId" => obj_id,
+          "ThumbNailWidth" => @thumbnail_width,
+          "ThumNailHeight" => @thumbnail_height
+      }
+
+      response = @client.call(:get_object_location, message: message)
+      response.to_hash[:get_object_location_response][:get_object_location_result]
+    end
+
+    private
+    def set_default_lang(lang)
+      if lang != @default_lang
+        case lang
+          when 'fr'
+            lang_id = 1
+          else
+            lang_id = 2
+        end
+        connection = Connection.new Connection::WSDL_API_V2
+        connection.set_default_language @session_id, lang_id, @channel_id, @username, @password
+      end
+      lang
+    end
+  end
+
   # sales client
   class Sales
+
+    WSDL_API_V1 = "http://wspublication.rentalp.ch/CITI_WS_OBJECTCOURTAGE.asmx?WSDL"
+
+    attr_accessor :channel_id, :username, :password, :default_lang
 
     #constructor
     def initialize(session_id, agency_id, thumbnail_width = 640, thumbnail_height = 480)
@@ -563,8 +941,11 @@ module CitiSoapLoader
       @thumbnail_height = thumbnail_height
       @agency_id = agency_id
       @default_lang = 'fr'
-      @wsdl = "http://wspublication.rentalp.ch/CITI_WS_OBJECTCOURTAGE.asmx?WSDL"
+      @wsdl = WSDL_API_V1
       @client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
+      @channel_id = 3
+      @username = "CITI_COURTAGE_PERSO"
+      @password = "LetMeIn_Now_Courtage_Perso"
     end
 
     # ... Courtage ...
@@ -572,6 +953,8 @@ module CitiSoapLoader
     #GetObjectCourtageListSimple
     def load_list(lang = nil)
       lang ||= @default_lang
+
+      set_default_lang lang
 
       search_param = {
           "ResortId" => -1,
@@ -614,6 +997,8 @@ module CitiSoapLoader
     def load_detail(object_id, lang = nil)
       lang ||= @default_lang
 
+      set_default_lang lang
+
       message = {"sessionKey" => @session_id,
                  "objectId_Origin" => object_id,
                  "agencyId" => @agency_id,
@@ -627,6 +1012,8 @@ module CitiSoapLoader
     #load promotion
     def load_promotion
       lang ||= @default_lang
+
+      set_default_lang lang
 
       search_param = {
           "ResortId" => -1,
@@ -669,6 +1056,8 @@ module CitiSoapLoader
     def load_eyecatcher
       lang ||= @default_lang
 
+      set_default_lang lang
+
       search_param = {
           "ResortId" => -1,
           "PolesLocationId" => -1,
@@ -705,5 +1094,21 @@ module CitiSoapLoader
       # Array of [:object_courtage_simple]
       response.to_hash[:get_object_courtage_list_simple_on_promotion_response][:get_object_courtage_list_simple_on_promotion_result]
     end
+
+    private
+    def set_default_lang(lang)
+      if lang != @default_lang
+        case lang
+          when 'fr'
+            lang_id = 1
+          else
+            lang_id = 2
+        end
+        connection = Connection.new Connection::WSDL_API_V1
+        connection.set_default_language @session_id, lang_id, @channel_id, @username, @password
+      end
+      lang
+    end
+
   end
 end

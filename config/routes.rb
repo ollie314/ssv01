@@ -1,32 +1,10 @@
 Ssv01::Application.routes.draw do
 
-  get "sales/index"
+  root :to => 'pub/index#index'
 
-  get "sales/search"
+  #get "agency/load"
 
-  get "sales/summary"
-
-  get "sales/details"
-
-  get "sales/location"
-
-  get "sales/pictures"
-
-  get "sales/videos"
-
-  get "sales/cache"
-
-  get "sales/check"
-
-  get "sales/sync"
-
-  get "sales/resync"
-
-  get "agency/load"
-
-  get "agency/check"
-
-  root :to => 'maintenance#index'
+  #get "agency/check"
 
   # check following notation to achieve same result
   #resources :publishers do
@@ -78,6 +56,9 @@ Ssv01::Application.routes.draw do
     match "/load_agency_info/:agency_id" => "agency#load_agency_info", :via => [:get, :post]
     match "/fill_agency_info/:agency_id" => "agency#fill_agency_info", :via => :get
     match "/check/:agency_id/:object_id" => "agency#check", :via => :get
+    match "/load_rentals_list/:agency_id" => "agency#load_rentals_list", :via => :get
+    match "/load_rentals_details/:agency_id" => "agency#load_rentals_details", :via => :get
+    match "/:agency_id/test" => "agency#test", :via => :get
   end
 
   # routes for administration namespace
@@ -134,14 +115,14 @@ Ssv01::Application.routes.draw do
     match ":agency_id/rentals/list" => "rentals#list", :via => :get
     match ":agency_id/rentals/search" => "rentals#search", :via => :get
 
-    match ":agency_id/rentals/:object_id" => "object#index", :via => :get
-    match ":agency_id/rentals/:object_id/summary" => "object#summary", :via => :get
-    match ":agency_id/rentals/:object_id/details" => "object#details", :via => :get
-    match ":agency_id/rentals/:object_id/location" => "object#location", :via => :get
-    match ":agency_id/rentals/:object_id/pictures" => "object#pictures", :via => :get
-    match ":agency_id/rentals/:object_id/videos" => "object#videos", :via => :get
-    match ":agency_id/rentals/:object_id/pricing" => "object#pricing", :via => :get
-    match ":agency_id/rentals/:object_id/availability" => "object#availability", :via => :get
+    match ":agency_id/rentals/:object_id" => "rentals#details", :via => :get
+    match ":agency_id/rentals/:object_id/summary" => "rentals#summary", :via => :get
+    match ":agency_id/rentals/:object_id/details" => "rentals#details", :via => :get
+    match ":agency_id/rentals/:object_id/location" => "rentals#location", :via => :get
+    match ":agency_id/rentals/:object_id/pictures" => "rentals#pictures", :via => :get
+    match ":agency_id/rentals/:object_id/videos" => "rentals#videos", :via => :get
+    match ":agency_id/rentals/:object_id/pricing" => "rentals#pricing", :via => :get
+    match ":agency_id/rentals/:object_id/availability" => "rentals#availability", :via => :get
 
 
   end
@@ -186,6 +167,10 @@ Ssv01::Application.routes.draw do
     get "/documents/term_of_use"
     get "/documents/tou"
   end
+
+  #namespace :statics do
+  #  match "/:agency_id/sales/:object_id/:filename.:file_ext" => "images#sales", :via => :get
+  #end
 
   get "account/list"
   get "account/summary"

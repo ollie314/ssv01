@@ -1,7 +1,7 @@
 require 'citi/citi_soap_loader'
 require 'uploads/fs'
 
-class Api::SalesController < ApplicationController
+class Api::RentalsController < ApplicationController
 
   before_filter :check_for_format, :check_for_agency_id
 
@@ -9,28 +9,23 @@ class Api::SalesController < ApplicationController
 
   DEFAULT_LANG = 'fr'
 
-  def index
-    details
-  end
-
   def list
     agency_id = params[:agency_id]
     lang = params[:hl]
     lang ||= DEFAULT_LANG
-    cache = CitiSoapLoader::Cache.new agency_id, CitiSoapLoader::Target::SALES
-    local_url = "#{request.protocol}#{request.host_with_port}"
+    cache = CitiSoapLoader::Cache.new agency_id, CitiSoapLoader::Target::RENTALS
 
-    path = Uploads::Fs.get_cache_dir.join(String(agency_id), 'sales')
+    path = Uploads::Fs.get_cache_dir.join String(agency_id), CitiSoapLoader::Target::RENTALS
     filename = path.to_s + File::SEPARATOR + (!lang.nil? ? lang + "_" : "" ) + "list.json"
 
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
-      index = cache.load 'index_props_sales.json'
+      index = cache.load 'index_props_rentals.json' unless cache.exists? 'index_props_rentals.json'
       logger.debug("Filename is %s" % [obj])
       translator = CitiSoapLoader::Translator.new
       objs = []
       obj.each{ |item|
-        objs.push translator.translate_for_list item, index, lang
+        objs.push translator.translate_for_list_rentals item, index || nil, lang
       }
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => objs}}
     else
@@ -40,6 +35,7 @@ class Api::SalesController < ApplicationController
   end
 
   def search
+
     agency_id = params[:agency_id]
     translator = CitiSoapLoader::Translator.new
     lang = params[:hl]
@@ -68,25 +64,7 @@ class Api::SalesController < ApplicationController
 
     @response = { :statusCode => 0, :statusMessage => "Success", :content => { :objects => @results } }
     respond_with @response
-  end
 
-  def summary
-    agency_id = params[:agency_id]
-    object_id = params[:object_id]
-    lang = params[:hl]
-    lang ||= DEFAULT_LANG
-
-    path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
-    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
-    if File.exists? filename
-      obj = JSON.parse(IO.read(filename))
-      translator = CitiSoapLoader::Translator.new
-      obj_translated = translator.translate_for_summary obj, lang
-      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
-    else
-      @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
-    end
-    respond_with @response
   end
 
   def details
@@ -95,13 +73,13 @@ class Api::SalesController < ApplicationController
     lang = params[:hl]
     lang ||= DEFAULT_LANG
 
-    path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
+    path = Uploads::Fs.get_cache_dir.join(agency_id, 'rentals')
     filename = path.to_s + File::SEPARATOR + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
     logger.debug filename
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       translator = CitiSoapLoader::Translator.new
-      obj_translated = translator.translate_for_details obj, lang
+      obj_translated = translator.translate_for_details_rentals obj, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
       @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
@@ -118,26 +96,12 @@ class Api::SalesController < ApplicationController
   def videos
   end
 
-  def cache
+  def pricing
+
   end
 
-  def check
-  end
+  def availability
 
-  def sync
-  end
-
-  def resync
-    sync
-  end
-
-  private
-
-  def load_objects(agency_id, lang = nil)
-    lang ||= DEFAULT_LANG
-    path = Uploads::Fs.get_cache_dir.join(agency_id, 'sales')
-    filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + "list.json"
-    @objects = JSON.parse(IO.read(filename))
   end
 
 end
