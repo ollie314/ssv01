@@ -323,10 +323,23 @@ module CitiSoapLoader
       result[:kind] = obj["id_object_type"]
       result[:kind_description] = get_kind obj["object_type_name"]
 
+      result[:summary] = {
+          lang => obj["object_courtage_promo"]
+      }
+      result[:description] = {
+          lang => obj["object_descriptions"]["object_description"]["translated_description"]
+      }
+
+      result[:price_range] = {
+          :lowest => obj["lowest_price_for_period"],
+          :highest => obj["highest_price_for_period"],
+          :avg_daily_price => obj["avg_daily_price"]
+      }
+
       result[:properties] = list_properties_rentals obj
       result[:attachments] = create_list_attachments obj
 
-      result[:address] = create_address obj
+      result[:address] = create_address_rental obj
       result[:location] = create_location obj
 
       result
@@ -531,6 +544,24 @@ module CitiSoapLoader
               :iso => item["object_country_iso_number_code"],
               :name => {
                   :fr => item["object_country_label"]
+              }
+          }
+      }
+      address
+    end
+
+    def create_address_rental(item)
+      address = {
+          :street1 => item["address1"],
+          :zipcode => item["qddress2"],
+          :city => item["place"],
+          :state => {
+              :fr => item["state_translated_label"]
+          },
+          :country => {
+              :iso => item["country_code"],
+              :name => {
+                  :fr => item["coutry"]
               }
           }
       }
