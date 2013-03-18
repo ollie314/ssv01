@@ -313,7 +313,7 @@ module CitiSoapLoader
     end
 
     def translate_for_details_rentals(obj, index = nil, lang = nil)
-      lang ||= 'fr'
+      lang = lang.nil? ? 'fr' : lang
       result = {}
       result[:id] = obj["id_object_location"]
       result[:name] = obj["object_name"]
@@ -326,9 +326,16 @@ module CitiSoapLoader
       result[:summary] = {
           lang => obj["object_courtage_promo"]
       }
-      result[:description] = {
-          lang => obj["object_descriptions"]["object_description"]["translated_description"]
-      }
+
+      begin
+        result[:description] = {
+            lang => obj["object_descriptions"]["object_description"]["translated_description"]
+        }
+      rescue
+        result[:description] = {
+            lang => nil
+        }
+      end
 
       result[:price_range] = {
           :lowest => obj["lowest_price_for_period"],
@@ -591,13 +598,15 @@ module CitiSoapLoader
     end
 
     def create_image_info(img)
-      img_url = (img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]).gsub(/\\+/, '/')
+      img_url = (img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"])
+      img_url = img_url.gsub(/\\+/, '/') unless img_url.nil?
+      img_url  = "http://www.rentalp.ch/ObjectImages/" + img_url unless img_url.nil?
       image = {
-          url: "http://www.rentalp.ch/ObjectImages/" + img_url,
+          url: img_url.nil? ? "" : img_url,
           caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
           description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
           kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
-          ext: File.extname(img_url)
+          ext: img_url.nil? ? "" : File.extname(img_url)
       }
     end
 
@@ -873,6 +882,7 @@ module CitiSoapLoader
       response = @client.call(:get_default_language, message: message)
 
       result = response.to_hash[:get_default_language_response][:get_default_language_result]
+      result
     end
 
     #define default language for next transaction
@@ -950,6 +960,7 @@ module CitiSoapLoader
           else
             lang_id = 2
         end
+        @default_lang = lang
         connection = Connection.new Connection::WSDL_API_V2
         connection.set_default_language @session_id, lang_id, @channel_id, @username, @password
       end

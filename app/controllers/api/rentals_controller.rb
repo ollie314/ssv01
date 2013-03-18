@@ -11,15 +11,16 @@ class Api::RentalsController < ApplicationController
 
   def list
     agency_id = params[:agency_id]
-    lang = params[:hl]
-    lang ||= DEFAULT_LANG
+    lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
+    logger.info ("Lang is %s" % [lang])
     cache = CitiSoapLoader::Cache.new agency_id, CitiSoapLoader::Target::RENTALS
 
     path = Uploads::Fs.get_cache_dir.join String(agency_id), CitiSoapLoader::Target::RENTALS
-    filename = path.to_s + File::SEPARATOR + (!lang.nil? ? lang + "_" : "" ) + "list.json"
+    filename = path.to_s + File::SEPARATOR + lang + "_list.json"
 
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
+      logger.info (obj.to_s)
       index = cache.load 'index_props_rentals.json' unless cache.exists? 'index_props_rentals.json'
       logger.debug("Filename is %s" % [obj])
       translator = CitiSoapLoader::Translator.new
@@ -70,16 +71,15 @@ class Api::RentalsController < ApplicationController
   def details
     object_id = params[:object_id]
     agency_id = params[:agency_id]
-    lang = params[:hl]
-    lang ||= DEFAULT_LANG
-
-    path = Uploads::Fs.get_cache_dir.join(agency_id, 'rentals')
-    filename = path.to_s + File::SEPARATOR + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
-    logger.debug filename
+    lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
+    logger.info ("Lang is %s" % [lang])
+    path = Uploads::Fs.get_cache_dir.join String(agency_id), CitiSoapLoader::Target::RENTALS
+    filename = path.to_s + File::SEPARATOR + lang + "_" + String(object_id) + ".json"
+    logger.info filename
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       translator = CitiSoapLoader::Translator.new
-      obj_translated = translator.translate_for_details_rentals obj, lang
+      obj_translated = translator.translate_for_details_rentals obj, nil, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
       @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
