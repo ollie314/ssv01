@@ -312,7 +312,7 @@ module CitiSoapLoader
       result
     end
 
-    def translate_for_details_rentals(obj, lang = nil)
+    def translate_for_details_rentals(obj, index = nil, lang = nil)
       lang ||= 'fr'
       result = {}
       result[:id] = obj["id_object_location"]
