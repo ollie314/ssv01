@@ -100,7 +100,7 @@ class Api::SalesController < ApplicationController
     logger.debug filename
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
-      translator = CitiSoapLoader::Translator.new
+      translator = CitiSoapLoader::Translator.new request
       obj_translated = translator.translate_for_details obj, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else

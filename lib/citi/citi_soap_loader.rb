@@ -236,8 +236,8 @@ module CitiSoapLoader
 
   class Translator
 
-    def initialize
-      # nothing to do right now
+    def initialize(request = nil)
+      @request = request
     end
 
     def get_kind(obj_kind_label)
@@ -284,7 +284,7 @@ module CitiSoapLoader
       result[:name] = obj["object_name"]
       result[:nb_room] = obj["object_number_of_rooms"]
       result[:nb_floor] = obj["object_number_of_rooms"]
-      result[:cover] = obj["thumb_nail_url"]
+      result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
       result[:price] = obj["object_courtage_selling_price"]
       result[:new] = obj["object_courtage_is_new"]
       result[:reserved] = obj["object_courtage_reserved"]
@@ -305,7 +305,7 @@ module CitiSoapLoader
       result[:number_of_rooms] = obj["number_of_rooms"]
       result[:number_of_bedrooms] = obj["number_of_bedrooms"]
       result[:number_of_bathrooms] = obj["number_of_bathrooms"]
-      result[:cover] = obj["thumb_nail_url"]
+      result[:main_picture] = "%s/%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
       result[:kind] = obj["id_object_type"]
       result[:kind_description] = get_kind obj["object_type_name"]
       result[:attachments] = index[obj["object_id"]] unless index.nil?
@@ -319,7 +319,7 @@ module CitiSoapLoader
       result[:name] = obj["object_name"]
       result[:floor_size] = obj["floor_size"]
       result[:number_of_rooms] = obj["number_of_rooms"]
-      result[:cover] = obj["thumb_nail_url"]
+      result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
       result[:kind] = obj["id_object_type"]
       result[:kind_description] = get_kind obj["object_type_name"]
 
@@ -512,7 +512,7 @@ module CitiSoapLoader
       result[:name] = obj["object_name"]
       result[:nb_room] = obj["object_number_of_rooms"]
       result[:nb_floor] = obj["object_number_of_rooms"]
-      result[:main_picture] = obj["thumb_nail_url"]
+      result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
 
 
       result[:sellable_cat] = 1 # TODO : Find out the correct value
@@ -597,7 +597,7 @@ module CitiSoapLoader
       }
     end
 
-    def create_image_info(img)
+    def create_image_info(img, index = nil)
       img_url = (img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"])
       img_url = img_url.gsub(/\\+/, '/') unless img_url.nil?
       img_url  = "http://www.rentalp.ch/ObjectImages/" + img_url unless img_url.nil?
@@ -608,12 +608,15 @@ module CitiSoapLoader
           kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
           ext: img_url.nil? ? "" : File.extname(img_url)
       }
+      image['cover'] = 1 unless !index.nil? and index != 0
+      image
     end
 
-    def create_image_info_from_cache(img, item)
+    def create_image_info_from_cache(img, item, endpoint = 'sales')
       _img = img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]
+      img_url = "%s%s/cache/%s/%s/%s" % [@request.protocol, @request.host_with_port, item["agency_info"]["id_agency"], endpoint, File.basename(_img).gsub(/\\+/, '/')] unless _img.nil?
       image = {
-          url: "http://www.rentalp.ch/ObjectImages/" + File.basename(_img).gsub(/\\+/, '/'),
+          url: img_url,
           caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
           description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
           kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
@@ -739,37 +742,38 @@ module CitiSoapLoader
       val !~ /^\s*[+-]?((\d+_?)*\d+(\.(\d+_?)*\d+)?|\.(\d+_?)*\d+)(\s*|([eE][+-]?(\d+_?)*\d+)\s*)$/
     end
 
-    def list_image(obj)
+    def list_image(obj, endpoint = 'sales')
       images = []
+      i = 0
       exts = ['.jpg', '.png', '.jpeg', '.gif']
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |img|
-          _img = create_image_info img
+          _img = create_image_info_from_cache img, obj, endpoint
           if exts.include? _img[:ext] || img[:kind] == 1
             images.push _img
           end
         }
       else
-        _img = create_image_info obj["object_images"]["object_image"]
+        _img = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
         images.push _img unless !exts.include? _img[:ext] || img[:kind] != 1
       end
       images
     end
 
-    def list_docs(obj)
+    def list_docs(obj, endpoint = 'sales')
       plans = []
       exts = ['.pdf']
 
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
-          _img = create_image_info item
+          _img = create_image_info_from_cache item, obj, endpoint
           if exts.include? _img[:ext]
             _img[:kind] = 4
             plans.push _img
           end
         }
       else
-        _img = create_image_info obj["object_images"]["object_image"]
+        _img = create_image_info obj["object_images"]["object_image"], endpoint
         if exts.include? _img[:ext]
           _img[:kind] = 4
           plans.push _img
@@ -778,17 +782,17 @@ module CitiSoapLoader
       plans
     end
 
-    def list_plans(obj)
+    def list_plans(obj, endpoint = 'sales')
       plans = []
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
-          _img = create_image_info item
+          _img = create_image_info_from_cache item, obj, endpoint
           if _img[:kind] == 1
             plans.push _img
           end
         }
       else
-        _img = create_image_info obj["object_images"]["object_image"]
+        _img = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
         if _img[:kind] == 1
           plans.push _img
         end
@@ -796,19 +800,19 @@ module CitiSoapLoader
       plans
     end
 
-    def list_videos(obj)
+    def list_videos(obj, endpoint = 'sales')
       videos = []
 
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
           #video_url = 'http://www.youtube.com/embed/'
-          video = create_image_info item
+          video = create_image_info_from_cache item, obj, endpoint
           if video[:kind] == 3
             videos.push video
           end
         }
       else
-        video = create_image_info obj["object_images"]["object_image"]
+        video = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
         if video[:kind] == 3
           videos.push video
         end
@@ -816,11 +820,11 @@ module CitiSoapLoader
       videos
     end
 
-    def create_list_attachments(obj)
-      plans = list_plans obj
-      images = list_image obj
-      videos = list_videos obj
-      docs = list_docs obj
+    def create_list_attachments(obj, endpoint = 'sales')
+      plans = list_plans obj, endpoint
+      images = list_image obj, endpoint
+      videos = list_videos obj, endpoint
+      docs = list_docs obj, endpoint
       attachments = {
           :summary => {
               :pictures => images.length,
