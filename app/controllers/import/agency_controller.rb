@@ -5,16 +5,25 @@ class Import::AgencyController < ApplicationController
 
   respond_to :xml, :json, :html
 
-  DEFAULT_LANG = 'fr'
+  DEFAULT_LANG                = 'fr'
+  DEFAULT_REDO_CACHE_LIST     = true
+  DEFAULT_REDO_CACHE_DETAILS  = true
+  DEFAULT_REDO_CACHE_IMAGES   = true
+  DEFAULT_REBUILD_INDEX       = true
+  LOADER_DEBUG_MODE           = true
 
-  def fill_agency_info
+  def do_fill_agency_info
     # TODO : add this part to the configuration settings
     channel_id = 3
     username = "CITI_COURTAGE_PERSO"
     password = "LetMeIn_Now_Courtage_Perso"
-    redo_cache_list ||= params[:cache_all].nil? ? true : params[:cache_all] == 1
+
+    redo_cache_list = params[:cache_list].nil? ? DEFAULT_REDO_CACHE_LIST : params[:cache_list] == 1
+    redo_cache_details = params[:cache_details].nil? ? DEFAULT_REDO_CACHE_DETAILS : params[:cache_details] == 1
+    redo_cache_image = params[:cache_image].nil? ? DEFAULT_REDO_CACHE_IMAGES : params[:cache_image] == 1
+    rebuild_index = params[:rebuild_index].nil? ? DEFAULT_REBUILD_INDEX : params[:rebuild_index] == 1
+
     lang = params[:hl] || DEFAULT_LANG
-    start = Time.new
 
     connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V1
     session_id = connection.connect(channel_id, username, password)
@@ -24,21 +33,55 @@ class Import::AgencyController < ApplicationController
     loader = CitiSoapLoader::Sales.new(session_id, agency_id)
     object_list = loader.load_list
     cache.store(lang + "_" + 'list', 'json', object_list[:object_courtage_simple]) unless !redo_cache_list
-    if object_list.nil?
+    if object_list.nil? || !redo_cache_details
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => 0}}
     else
       object_list[:object_courtage_simple].each { |p|
         cache.delete_image_cache_rep_for_item_id p[:object_id]
         object_detail = loader.load_detail p[:object_id], lang
         cache.store(lang + "_" + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
-        o = cache.load(lang + "_" + object_detail[:object_courtage][:object_id] + ".json")
-        cache_images o, cache
+        if redo_cache_image
+          o = cache.load(lang + "_" + object_detail[:object_courtage][:object_id] + ".json")
+          cache.store_image_for_list o[:thumb_nail_url].nil? ? o["thumb_nail_url"] : o[:thumb_nail_url]
+          cache_images o, cache
+        end
       }
-      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list[:object_courtage_simple].count}}
+      if rebuild_index
+        begin
+          indexer = CitiSoapLoader::Indexer.new
+          indexer.create_index agency_id, 'sales', request, 'index_props'
+          reindex_status = 1
+        rescue Exception => ex
+          reindex_status = 0
+          reindex_error = ex.message
+          reindex_error_details = ex.backtrace unless !LOADER_DEBUG_MODE
+        end
+      end
+      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list[:object_courtage_simple].count, :reindex_status => reindex_status}}
+      @response[:content][:reindex_error] = reindex_error unless reindex_error.nil?
+      @response[:content][:reindex_error_details] = reindex_error_details unless reindex_error_details.nil?
     end
+    @response
+  end
+
+  def fill_agency_info
+    start = Time.new
+    lang_to_fill = ['fr','en']
+
+    params[:hl] = lang_to_fill.pop #params[:hl].nil? ? DEFAULT_LANG : params[:hl]
+    @response = do_fill_agency_info
+    last_reindex_status = @response[:content][:reindex_status]
+
+    params[:hl] = lang_to_fill.pop
+    @response = do_fill_agency_info
+    reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
+
     stop = Time.new
     duration = (stop - start) * 1000
+
     @response[:content][:duration] = duration
+    @response[:content][:reindex_status] = reindex_status
+
     respond_with @response
   end
 
@@ -63,7 +106,14 @@ class Import::AgencyController < ApplicationController
         cache_images object_detail, cache
         cache.store(lang + "_" + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
       }
-      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list[:object_courtage_simple].count}}
+      begin
+        indexer = CitiSoapLoader::Indexer.new
+        indexer.create_index agency_id, 'sales', 'index_props_sales'
+        reindex_status = 1
+      rescue
+        reindex_status = 0
+      end
+      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list[:object_courtage_simple].count, :reindex_status => reindex_status}}
     end
     respond_with @response
   end
@@ -93,11 +143,12 @@ class Import::AgencyController < ApplicationController
     cpt
   end
 
-  def  load_rentals_list
+  def do_load_rentals_list
     channel_id = 1015
     username = "CITI_VITTEL"
     password = "Vittel_1_rx"
 
+    start = Time.new
     lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
     rebuild_cache = params[:rebuild_cache].nil? ? false : params[:rebuild_cache]
 
@@ -120,14 +171,51 @@ class Import::AgencyController < ApplicationController
     else
       if rebuild_cache
         object_list.each { |item|
-          object_detail = loader.load_detail item[:object_id], lang
-          cache.store(lang + "_" + object_detail[:object_location][:object_id], 'json', object_detail[:object_location])
-          obj = cache.load(lang + "_" + object_detail[:object_location][:object_id] + '.json')
+          object_detail = loader.load_details item[:id_object_location], lang
+          cache.store(lang + "_" + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
+          obj = cache.load(lang + "_" + object_detail[:object_location][:id_object_location] + '.json')
+          cache.store_image_for_list obj[:thumb_nail_url].nil? ? obj["thumb_nail_url"] : obj[:thumb_nail_url]
           cache_images obj, cache
         }
       end
-      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :objects => object_list}}
+      begin
+        indexer = CitiSoapLoader::Indexer.new
+        indexer.create_index agency_id, 'rentals', request, 'index_props'
+        reindex_status = 1
+      rescue Exception => ex
+        reindex_status = 0
+        reindex_error = ex.message
+        reindex_error_details = ex.backtrace unless !LOADER_DEBUG_MODE
+      end
+      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :objects => object_list, :reindex_status => reindex_status}}
+      @response[:content][:reindex_error] = reindex_error unless reindex_error.nil?
+      @response[:content][:reindex_error_details] = reindex_error_details unless reindex_error_details.nil?
     end
+
+    stop = Time.new
+    duration = (stop - start) * 1000
+    @response[:content][:duration] = duration
+
+    @response
+  end
+
+  def  load_rentals_list
+    lang_to_fill = ['fr','en']
+    params[:rebuild_cache] = true
+
+    params[:hl] = lang_to_fill.pop #params[:hl].nil? ? DEFAULT_LANG : params[:hl]
+    @response = do_load_rentals_list
+    last_reindex_status = @response[:content][:reindex_status]
+    duration = @response[:content][:duration]
+
+    params[:hl] = lang_to_fill.pop
+    @response = do_load_rentals_list
+    reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
+    duration += @response[:content][:duration]
+
+    @response[:content][:duration] = duration
+    @response[:content][:reindex_status] = reindex_status
+
     respond_with @response
   end
 
@@ -159,7 +247,14 @@ class Import::AgencyController < ApplicationController
         obj = cache.load(lang + "_" + object_detail[:object_location][:id_object_location] + '.json')
         cache_images obj, cache, 'rentals'
       }
-      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list.count}}
+      begin
+        indexer = CitiSoapLoader::Indexer.new
+        indexer.create_index agency_id, 'rentals', 'index_props_rentals'
+        reindex_status = 1
+      rescue
+        reindex_status = 0
+      end
+      @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :nb_objects => object_list.count, :reindex_status => reindex_status}}
     end
 
     respond_with @response
@@ -205,19 +300,21 @@ class Import::AgencyController < ApplicationController
       obj_translated = translator.translate_for_details obj
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
-      @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "File not exists"}}
+      @response = {:statusCode => 1, :statusMessage => "Error", :content => {:error_info => "Sorry the item seems doesn't exist"}}
     end
     respond_with @response
   end
 
   def test
     agency_id = params[:agency_id]
+    params[:hl] = 'en_US'
+    lang = params[:hl]
     url = "#{request.protocol}#{request.host_with_port}"
     full_path = "#{request.fullpath}"
     o_full_path = "#{request.original_fullpath}"
     domain = "#{request.domain}"
     remote_addr = "#{request.remote_ip}"
-    @response = {:statusCode => 0, :statusMessage => "Success", :content => {:url => url, :full_path => full_path, :original_full_path => o_full_path, :domain => domain, :remote_addr => remote_addr}}
+    @response = {:statusCode => 0, :statusMessage => "Success", :content => {:lang => lang, :url => url, :full_path => full_path, :original_full_path => o_full_path, :domain => domain, :remote_addr => remote_addr}}
     respond_with @response
   end
 end

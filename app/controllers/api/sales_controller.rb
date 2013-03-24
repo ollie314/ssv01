@@ -27,7 +27,7 @@ class Api::SalesController < ApplicationController
       obj = JSON.parse(IO.read(filename))
       index = cache.load 'index_props_sales.json'
       logger.debug("Filename is %s" % [obj])
-      translator = CitiSoapLoader::Translator.new
+      translator = CitiSoapLoader::Translator.new request
       objs = []
       obj.each{ |item|
         objs.push translator.translate_for_list item, index, lang
@@ -41,7 +41,7 @@ class Api::SalesController < ApplicationController
 
   def search
     agency_id = params[:agency_id]
-    translator = CitiSoapLoader::Translator.new
+    translator = CitiSoapLoader::Translator.new request
     lang = params[:hl]
     lang ||= DEFAULT_LANG
 
@@ -80,7 +80,7 @@ class Api::SalesController < ApplicationController
     filename = path.to_s + "/" + (!lang.nil? ? lang + "_" : "" ) + object_id + ".json"
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
-      translator = CitiSoapLoader::Translator.new
+      translator = CitiSoapLoader::Translator.new request
       obj_translated = translator.translate_for_summary obj, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else

@@ -21,9 +21,9 @@ class Api::RentalsController < ApplicationController
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
       logger.info (obj.to_s)
-      index = cache.load 'index_props_rentals.json' unless cache.exists? 'index_props_rentals.json'
+      index = cache.load 'index_props_rentals.json' unless !cache.exists? 'index_props_rentals.json'
       logger.debug("Filename is %s" % [obj])
-      translator = CitiSoapLoader::Translator.new
+      translator = CitiSoapLoader::Translator.new request
       objs = []
       obj.each{ |item|
         objs.push translator.translate_for_list_rentals item, index || nil, lang
@@ -38,7 +38,7 @@ class Api::RentalsController < ApplicationController
   def search
 
     agency_id = params[:agency_id]
-    translator = CitiSoapLoader::Translator.new
+    translator = CitiSoapLoader::Translator.new request
     lang = params[:hl]
     lang ||= DEFAULT_LANG
 
@@ -78,7 +78,7 @@ class Api::RentalsController < ApplicationController
     logger.info filename
     if File.exists? filename
       obj = JSON.parse(IO.read(filename))
-      translator = CitiSoapLoader::Translator.new
+      translator = CitiSoapLoader::Translator.new request
       obj_translated = translator.translate_for_details_rentals obj, nil, lang
       @response = {:statusCode => 0, :statusMessage => "Success", :content => {:agency_id => agency_id, :object => obj_translated}}
     else
