@@ -624,7 +624,12 @@ module CitiSoapLoader
     def create_image_info_from_cache(img, item, endpoint = 'sales')
       _img = img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]
       item_id = endpoint == 'sales' ? "object_id" : "id_object_location"
-      img_url = "%s%s/cache/%s/%s/images/%s/%s" % [@request.protocol, @request.host_with_port, item["agency_info"]["id_agency"], endpoint, item[item_id], File.basename(_img).gsub(/\\+/, '/')] unless _img.nil?
+      img_url = "%s%s/cache/%s/%s/images/%s/%s" % [@request.protocol,
+                                                   @request.host_with_port,
+                                                   item["agency_info"]["id_agency"],
+                                                   endpoint,
+                                                   item[item_id],
+                                                   File.basename(_img.gsub(/\\+/, '/'))] unless _img.nil?
       image = {
           url: img_url,
           caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
