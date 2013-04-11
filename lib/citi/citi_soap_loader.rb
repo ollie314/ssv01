@@ -118,6 +118,7 @@ module CitiSoapLoader
     end
 
     def store_image_for_list(thumb)
+      return unless !/.*?\.(jpg|png|jpeg|jpg|gif|pdf|doc|xls|docx|xslx)/.match(thumb).nil?
       begin
         path = Uploads::Fs.create_path_if_not_exists @rep.join('images', 'list')
         _th = Uploads::Helper::clean_url File.basename thumb
@@ -149,6 +150,7 @@ module CitiSoapLoader
     end
 
     def cache_image_by_url(item, url, target = 'sales')
+      return unless !/.*?\.(jpg|png|jpeg|jpg|gif|pdf|doc|xls|docx|xslx)/.match(url).nil?
       begin
         case target
           when 'rentals'

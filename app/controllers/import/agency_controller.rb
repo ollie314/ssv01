@@ -175,7 +175,7 @@ class Import::AgencyController < ApplicationController
           cache.store(lang + "_" + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
           obj = cache.load(lang + "_" + object_detail[:object_location][:id_object_location] + '.json')
           cache.store_image_for_list obj[:thumb_nail_url].nil? ? obj["thumb_nail_url"] : obj[:thumb_nail_url]
-          cache_images obj, cache
+          cache_images obj, cache, "rentals"
         }
       end
       begin
