@@ -355,6 +355,49 @@ module CitiSoapLoader
       }
 
       result[:properties] = list_properties_rentals obj
+
+      # Add floor
+      floor = {
+          :key => "floor",
+          :value => obj["floor_type_enum"]["translated_label_enum"],
+          :type => "string"
+      }
+      result[:properties].push(floor)
+
+      # Add category
+      cat = {
+          :key => "category",
+          :value => obj["impression_enum"]["translated_label_enum"],
+          :type => "string"
+      }
+      result[:properties].push(cat)
+
+      # Add balcony
+      balcony = {
+          :key => "balcony",
+          :value => (!obj["extended_availability_balcony_enum"].nil? and obj["extended_availability_balcony_enum"]["id_enum"] != 0),
+          :type => "boolean"
+      }
+      result[:properties].push(balcony)
+
+      # Add terrace
+      balcony = {
+          :key => "terrace",
+          :value => (!obj["extended_availability_terrace_enum"].nil? and obj["extended_availability_terrace_enum"]["id_enum"] != 0),
+          :type => "boolean"
+      }
+      result[:properties].push(balcony)
+
+      # Add Internet connection indication
+      internet = {
+          :key => "internet",
+          :value => (!obj["internet_enum"].nil? and obj["internet_enum"]["id_enum"] != 0),
+          :type => "boolean"
+      }
+      result[:properties].push(internet)
+
+
+
       result[:attachments] = create_list_attachments obj, "rentals"
 
       result[:address] = create_address_rental obj
