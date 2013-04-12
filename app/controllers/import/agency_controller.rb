@@ -122,9 +122,7 @@ class Import::AgencyController < ApplicationController
     return unless !item.nil?
     base_url = "http://www.RentAlp.ch/ObjectImages/"
     images = item["object_images"]["object_image"]
-    if images.class != Array
-      images = [images]
-    end
+    images = [images] if images.class != Array
     images.each{|img|
       next unless !img["unc_path_source"].nil?
       image_url = base_url + img["unc_path_source"].gsub("\\", "/")

@@ -611,7 +611,7 @@ module CitiSoapLoader
     def create_image_info(img, index = nil)
       img_url = (img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"])
       img_url = img_url.gsub(/\\+/, '/') unless img_url.nil?
-      img_url  = "http://www.rentalp.ch/ObjectImages/" + img_url unless img_url.nil?
+      img_url = "http://www.rentalp.ch/ObjectImages/" + img_url unless img_url.nil?
       image = {
           url: img_url.nil? ? "" : img_url,
           caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
@@ -825,14 +825,15 @@ module CitiSoapLoader
 
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
+          next if !check_for_video item
           #video_url = 'http://www.youtube.com/embed/'
-          video = create_image_info_from_cache item, obj, endpoint
+          video = create_video_object item
           if video[:kind] == 3
             videos.push video
           end
         }
       else
-        video = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
+        video = create_video_object obj["object_images"]["object_image"]
         if video[:kind] == 3
           videos.push video
         end
@@ -840,21 +841,71 @@ module CitiSoapLoader
       videos
     end
 
+    def list_virtual_visits(obj, endpoint = 'sales')
+      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      visits = []
+      if obj["object_images"]["object_image"].class == Array
+        obj["object_images"]["object_image"].each { |item|
+          next if item["url_small"].nil? or check_for_video item
+          visit = create_visit_object item
+          if visit[:kind] == 4
+            visits.push visit
+          end
+        }
+      else
+        visit = create_visit_object obj["object_images"]["object_image"]
+        if visit[:kind] == 4
+          visits.push visit
+        end
+      end
+      visits
+    end
+
     def create_list_attachments(obj, endpoint = 'sales')
       plans = list_plans obj, endpoint
       images = list_image obj, endpoint
       videos = list_videos obj, endpoint
       docs = list_docs obj, endpoint
+      virtual_visits = list_virtual_visits obj, endpoint
       attachments = {
           :summary => {
               :pictures => images.length,
               :plans => plans.length,
               :videos => videos.length,
-              :docs => docs.length
+              :docs => docs.length,
+              :virtual_visits => virtual_visits.length
           },
-          :content => plans + images + videos + docs
+          :content => plans + images + videos + docs + virtual_visits
       }
     end
+
+    private
+    def check_for_video(item)
+      return false if item["url_small"].nil?
+      url = item["url_small"]
+      video_url = 'http://www.youtube.com/embed/'
+      url.include? video_url
+    end
+
+    def create_video_object(item)
+      video = {
+          url: item["url_small"],
+          caption: item["label_title"].nil? ? item[:label_title] : item["label_title"],
+          description: item["label_description"].nil? ? item[:label_description] : item["label_description"],
+          kind: 3,
+          ext: nil
+      }
+    end
+    def create_visit_object(item)
+      video = {
+          url: item["url_small"],
+          caption: item["label_title"].nil? ? item[:label_title] : item["label_title"],
+          description: item["label_description"].nil? ? item[:label_description] : item["label_description"],
+          kind: 4,
+          ext: nil
+      }
+    end
+
   end
 
   class Connection
