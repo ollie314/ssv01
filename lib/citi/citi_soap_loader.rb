@@ -43,9 +43,9 @@ module CitiSoapLoader
         _fname = f.absolute? ? f.to_s : parent_path.to_s + File::SEPARATOR + f.to_s
         cur_obj = JSON.parse(IO.read(_fname))
         case target
-          when 'rentals'
+          when Target::RENTALS
             id_key = 'id_object_location'
-          when 'sales'
+          when Target::SALES
             id_key = 'object_id'
         end
         index[cur_obj[id_key]] = get_props cur_obj, translator
@@ -62,6 +62,7 @@ module CitiSoapLoader
       props['plans'] = translator.list_plans(obj).size
       props['docs'] = translator.list_docs(obj).size
       props['videos'] = translator.list_videos(obj).size
+      props['virtual_visits'] = translator.list_virtual_visits(obj).size
       props
     end
 
