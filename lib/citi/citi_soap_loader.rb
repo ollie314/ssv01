@@ -331,8 +331,8 @@ module CitiSoapLoader
           obj["object_remote_id"],
           obj["agency_info"]["id_agency"],
           lang,
-          @request.referer.nil? ? "" : @request.referer,
-          @request.referer.nil? ? "" : @request.referer,
+          @request.referer.nil? ? obj["agency_info"]["website"] : @request.referer,
+          @request.referer.nil? ? obj["agency_info"]["website"] : @request.referer,
       ]
 
       result[:summary] = {
@@ -368,10 +368,39 @@ module CitiSoapLoader
       # Add category
       cat = {
           :key => "category",
-          :value => obj["impression_enum"]["translated_label_enum"],
+          :value => obj["self_assessement_enum"]["translated_label_enum"],
           :type => "string"
       }
       result[:properties].push(cat)
+
+      # Add parking
+      park_type = obj["parking_enum"]["code_enum"]
+      case park_type
+        when "MULTI_STOREY"
+          supported_types = ["Covered", "shared parking"]
+          types = String(obj["parking_enum"]["translated_label_enum"]).split(",")
+          indoor_park = types.include? supported_types[0]
+          shared_park = types.include? supported_types[1]
+          outdoor_park = FALSE
+        when "COVERED_LOT"
+          indoor_park = TRUE
+          shared_park = TRUE
+          outdoor_park = FALSE
+        when "OPEN_LOT"
+          indoor_park = FALSE
+          shared_park = TRUE
+          outdoor_park = TRUE
+        when "GARAGE"
+          indoor_park = TRUE
+          shared_park = FALSE
+          outdoor_park = FALSE
+
+        else
+          # known NO_INFORMATION, null
+          indoor_park = FALSE
+          shared_park = FALSE
+          outdoor_park = FALSE
+      end
 
       # Add balcony
       balcony = {
@@ -496,6 +525,7 @@ module CitiSoapLoader
           "label_annulation_insurance",
           "label_bail",
           "label_handling_charge",
+          "has_ski_area_access",
           "label_wet_room_specials",
           "label_kitchen_specials",
           "label_special_services",
@@ -524,9 +554,7 @@ module CitiSoapLoader
 
       booleans = [FalseClass, TrueClass]
       item.keys.each { |k|
-        if !handled.include? k
-          next
-        end
+        next if !handled.include? k
         v = item[k]
         t = item[k].class
         if nil === v
@@ -676,11 +704,15 @@ module CitiSoapLoader
                                                    endpoint,
                                                    item[item_id],
                                                    File.basename(_img.gsub(/\\+/, '/'))] unless _img.nil?
+      if !_img.nil?
+        ck = img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"]
+        k = (ck == 0 and File.extname(_img) == ".pdf") ? 3 : ck
+      end
       image = {
           url: img_url,
           caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
           description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
-          kind: img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"],
+          kind: ck,
           ext: _img.nil? ? "" : File.extname(_img)
       }
     end
@@ -830,14 +862,14 @@ module CitiSoapLoader
         obj["object_images"]["object_image"].each { |item|
           _img = create_image_info_from_cache item, obj, endpoint
           if exts.include? _img[:ext]
-            _img[:kind] = 4
+            _img[:kind] = 3
             plans.push _img
           end
         }
       else
         _img = create_image_info obj["object_images"]["object_image"], endpoint
         if exts.include? _img[:ext]
-          _img[:kind] = 4
+          _img[:kind] = 3
           plans.push _img
         end
       end
@@ -850,9 +882,7 @@ module CitiSoapLoader
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
           _img = create_image_info_from_cache item, obj, endpoint
-          if _img[:kind] == 1
-            plans.push _img
-          end
+          plans.push _img if _img[:kind] == 1 #or _img[:ext].sub(/\./,"") == "pdf"
         }
       else
         _img = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
@@ -885,12 +915,18 @@ module CitiSoapLoader
       videos
     end
 
+    def check_for_pdf item
+      return false if item["url_large"].nil?
+      m = item["url_large"].match(/\,pdf/)
+      !m.nil? and m.size > 0
+    end
+
     def list_virtual_visits(obj, endpoint = 'sales')
       return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
       visits = []
       if obj["object_images"]["object_image"].class == Array
         obj["object_images"]["object_image"].each { |item|
-          next if item["url_small"].nil? or check_for_video item
+          next if item["url_small"].nil? or check_for_video(item) or check_for_pdf item
           visit = create_visit_object item
           if visit[:kind] == 4
             visits.push visit
@@ -906,11 +942,11 @@ module CitiSoapLoader
     end
 
     def create_list_attachments(obj, endpoint = 'sales')
+      virtual_visits = list_virtual_visits obj, endpoint
       plans = list_plans obj, endpoint
       images = list_image obj, endpoint
       videos = list_videos obj, endpoint
       docs = list_docs obj, endpoint
-      virtual_visits = list_virtual_visits obj, endpoint
       attachments = {
           :summary => {
               :pictures => images.length,
@@ -919,7 +955,7 @@ module CitiSoapLoader
               :docs => docs.length,
               :virtual_visits => virtual_visits.length
           },
-          :content => plans + images + videos + docs + virtual_visits
+          :content => virtual_visits + plans + images + videos + docs
       }
     end
 
