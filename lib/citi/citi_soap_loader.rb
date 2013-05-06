@@ -862,14 +862,14 @@ module CitiSoapLoader
         obj["object_images"]["object_image"].each { |item|
           _img = create_image_info_from_cache item, obj, endpoint
           if exts.include? _img[:ext]
-            _img[:kind] = 3
+            _img[:kind] = 2
             plans.push _img
           end
         }
       else
         _img = create_image_info obj["object_images"]["object_image"], endpoint
         if exts.include? _img[:ext]
-          _img[:kind] = 3
+          _img[:kind] = 2
           plans.push _img
         end
       end
@@ -918,7 +918,7 @@ module CitiSoapLoader
     def check_for_pdf item
       return false if item["url_large"].nil?
       m = item["url_large"].match(/\,pdf/)
-      !m.nil? and m.size > 0
+      m.nil? or m.size > 0
     end
 
     def list_virtual_visits(obj, endpoint = 'sales')
