@@ -340,9 +340,21 @@ module CitiSoapLoader
       }
 
       begin
-        result[:description] = {
-            lang => obj["object_descriptions"]["object_description"]["translated_description"]
-        }
+        if obj["object_descriptions"]["object_description"].class == Array
+          #descriptions = Array.new
+          last = nil
+          obj["object_descriptions"]["object_description"].each { |descr|
+            retains = last.nil? ? true : (descr["sort_order"] > last["sort_order"])
+            last = descr if retains
+          }
+          result[:description] = {
+              lang => last["translated_description"]
+          }
+        else
+          result[:description] = {
+              lang => obj["object_descriptions"]["object_description"]["translated_description"]
+          }
+        end
       rescue
         result[:description] = {
             lang => nil
@@ -425,7 +437,6 @@ module CitiSoapLoader
           :type => "boolean"
       }
       result[:properties].push(internet)
-
 
 
       result[:attachments] = create_list_attachments obj, "rentals"
@@ -603,9 +614,28 @@ module CitiSoapLoader
       result[:summary] = {
           lang => obj["object_courtage_promo"]
       }
-      result[:description] = {
-          lang => obj["object_descriptions"]["object_description"]["translated_description"]
-      }
+
+      begin
+        if obj["object_descriptions"]["object_description"].class == Array
+          #descriptions = Array.new
+          last = nil
+          obj["object_descriptions"]["object_description"].each { |descr|
+            retains = last.nil? ? true : (descr["sort_order"] > last["sort_order"])
+            last = descr if retains
+          }
+          result[:description] = {
+              lang => last["translated_description"]
+          }
+        else
+          result[:description] = {
+              lang => obj["object_descriptions"]["object_description"]["translated_description"]
+          }
+        end
+      rescue
+        result[:description] = {
+            lang => nil
+        }
+      end
 
       result[:properties] = list_properties obj
       result[:attachments] = create_list_attachments obj
@@ -976,6 +1006,7 @@ module CitiSoapLoader
           ext: nil
       }
     end
+
     def create_visit_object(item)
       video = {
           url: item["url_small"],
@@ -1052,6 +1083,76 @@ module CitiSoapLoader
     end
   end
 
+  class Season
+    attr_accessor :channel_id, :username, :password, :default_lang
+
+    DEFAULT_LANG = 'fr'
+    WSDL_API_V2 = 'http://wspublicationv2.rentalp.ch/CITI_WS_OBJECTLOCATION.asmx?WSDL'
+
+    def initialize(session_id, agency_id, lang = nil, thumbnail_width = 640, thumbnail_height = 480)
+      lang ||= DEFAULT_LANG
+      @session_id = session_id
+      @thumbnail_width = thumbnail_width
+      @thumbnail_height = thumbnail_height
+      @agency_id = agency_id
+      @default_lang = lang || DEFAULT_LANG
+      @wsdl = WSDL_API_V2
+      @client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
+    end
+
+    def load_list(lang = nil)
+      lang ||= @default_lang
+
+      set_default_lang lang
+
+      message = {
+          'sessionKey' => @session_id,
+          'ThumbNailWidth' => @thumbnail_width,
+          'ThumNailHeight' => @thumbnail_height,
+          'lShowOccupiedAsWell' => 1,
+          'nIdMainObjectType' => 1,
+          'nIdObjectType' => -1
+      }
+
+      response = @client.call(:get_object_location_list_simple, message: message)
+
+      # Array of [:object_location_simple]
+      response.to_hash[:get_object_location_list_simple_response][:get_object_location_list_simple_result][:object_location_simple]
+    end
+
+    def load_details(obj_id, lang = nil)
+      lang ||= @default_lang
+
+      set_default_lang lang
+
+      message = {
+          "sessionKey" => @session_id,
+          "objectLocationId" => obj_id,
+          "ThumbNailWidth" => @thumbnail_width,
+          "ThumNailHeight" => @thumbnail_height
+      }
+
+      response = @client.call(:get_object_location, message: message)
+      response.to_hash[:get_object_location_response][:get_object_location_result]
+    end
+
+    private
+    def set_default_lang(lang)
+      if lang != @default_lang
+        case lang
+          when 'fr'
+            lang_id = 1
+          else
+            lang_id = 2
+        end
+        @default_lang = lang
+        connection = Connection.new Connection::WSDL_API_V2
+        connection.set_default_language @session_id, lang_id, @channel_id, @username, @password
+      end
+      lang
+    end
+  end
+
   class Rentals
 
     attr_accessor :channel_id, :username, :password, :default_lang
@@ -1077,11 +1178,12 @@ module CitiSoapLoader
       set_default_lang lang
 
       message = {
-          "sessionKey" => @session_id,
-          "ThumbNailWidth" => @thumbnail_width,
-          "ThumNailHeight" => @thumbnail_height,
-          "nIdMainObjectType" => 0,
-          "nIdObjectType" => -1
+          'sessionKey' => @session_id,
+          'ThumbNailWidth' => @thumbnail_width,
+          'ThumNailHeight' => @thumbnail_height,
+          'lShowOccupiedAsWell' => 1,
+          'nIdMainObjectType' => 1,
+          'nIdObjectType' => -1
       }
 
       response = @client.call(:get_object_location_list_simple, message: message)
