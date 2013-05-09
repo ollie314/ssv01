@@ -215,16 +215,16 @@ class Import::AgencyController < ApplicationController
       if rebuild_cache
         object_list.each { |item|
           object_detail = @rentals_common_loder.load_details item[:id_object_location], lang
-          cache.store(lang + ' ' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
-          obj = cache.load(lang + ' ' + object_detail[:object_location][:id_object_location] + '.json')
+          cache.store(lang + '_' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
+          obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
           cache.store_image_for_list obj[:thumb_nail_url].nil? ? obj['thumb_nail_url'] : obj[:thumb_nail_url]
           cache_images obj, cache, 'rentals'
         }
 
         season_list.each { |item|
           object_detail = @rentals_season_loader.load_details item[:id_object_location], lang
-          cache.store(lang + ' ' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
-          obj = cache.load(lang + ' ' + object_detail[:object_location][:id_object_location] + '.json')
+          cache.store(lang + '_' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
+          obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
           cache.store_image_for_list obj[:thumb_nail_url].nil? ? obj['thumb_nail_url'] : obj[:thumb_nail_url]
           cache_images obj, cache, 'rentals'
         }
