@@ -175,6 +175,29 @@ module CitiSoapLoader
       end
     end
 
+    def cache_image_from_url(item, url, img_name, target = 'sales')
+      return unless !/.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
+      begin
+        case target
+          when 'rentals'
+            id_key = 'id_object_location'
+          when 'sales'
+            id_key = 'object_id'
+        end
+        path = Uploads::Fs.create_if_not_exists @rep.join('images'), item[id_key]
+        open(url) { |f|
+          image_name = path.to_s + File::SEPARATOR + img_name
+          File.open(image_name, 'wb') do |file|
+            file.puts f.read
+          end
+        }
+        true
+      rescue Exception => e
+        e.message
+        false
+      end
+    end
+
     # drop a specific file from the cache
     def drop(filename)
       _fname = @rep.to_s + File::SEPARATOR + filename

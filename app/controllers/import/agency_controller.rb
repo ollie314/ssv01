@@ -211,15 +211,34 @@ class Import::AgencyController < ApplicationController
     respond_with @response
   end
 
+  def select_image_name(img)
+    names = %w(url_large url_medium url_small unc_path_source)
+    img_name = nil
+    names.each{|name|
+      next if name.nil?
+      img_name = img[name]
+      break
+    }
+    img_name
+  end
+
   def cache_images(item, cache, target = 'sales')
     return unless !item.nil?
     base_url = 'http://www.RentAlp.ch/ObjectImages/'
     images = item['object_images']['object_image']
     images = [images] if images.class != Array
     images.each { |img|
-      next unless !img['unc_path_source'].nil?
-      image_url = base_url + img['unc_path_source'].gsub('\\', '/')
-      cache.cache_image_by_url item, image_url, target
+      img_name = select_image_name img
+      next if img_name.nil?
+      match = /http:\/\/\w+/i.match(img_name)
+      if match and match.size > 0
+        clean_url = File.dirname(img_name) + '/' +  Uploads::Helper::clean_url(File.basename(img_name))
+        cache.cache_image_from_url item, clean_url, File.basename(img_name), target
+      else
+        image_url = base_url + img[img_name].gsub('\\', '/')
+        cache.cache_image_by_url item, image_url, target
+      end
+
     }
   end
 

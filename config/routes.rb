@@ -53,7 +53,7 @@ Ssv01::Application.routes.draw do
   end
 
   namespace :import do
-    match "/load_agency_info/:agency_id" => "agency#load_agency_info", :via => [:get, :post]
+    match '/load_agency_info/:agency_id' => "agency#load_agency_info", :via => [:get, :post]
     match "/fill_agency_info/:agency_id" => "agency#fill_agency_info", :via => :get
     match "/check/:agency_id/:object_id" => "agency#check", :via => :get
     match "/load_rentals_list/:agency_id" => "agency#load_rentals_list", :via => :get
