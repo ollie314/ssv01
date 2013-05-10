@@ -21,7 +21,7 @@ module CitiSoapLoader
     end
 
     def create_index(agency_id, target, request, index_filename = 'index_props', index_filename_ext = 'json')
-      index_pathname = "%s_%s.%s" % [index_filename, target, index_filename_ext]
+      index_pathname = '%s_%s.%s' % [index_filename, target, index_filename_ext]
       index = {}
       translator = Translator.new request
       case target
@@ -38,7 +38,7 @@ module CitiSoapLoader
       file_to_exclude = ['fr_list.json', 'en_list.json', index_pathname]
 
       files.each { |f|
-        next unless f.to_s != "images"
+        next unless f.to_s != 'images'
         next unless !f.directory? and !file_to_exclude.include? f.to_s and is_valid_file? f.to_s
         _fname = f.absolute? ? f.to_s : parent_path.to_s + File::SEPARATOR + f.to_s
         cur_obj = JSON.parse(IO.read(_fname))
@@ -51,7 +51,7 @@ module CitiSoapLoader
         index[cur_obj[id_key]] = get_props cur_obj, translator
       }
 
-      cache.store "%s_%s" % [index_filename, target], index_filename_ext, index
+      cache.store '%s_%s' % [index_filename, target], index_filename_ext, index
       true
     end
 
@@ -119,11 +119,12 @@ module CitiSoapLoader
     end
 
     def store_image_for_list(thumb)
-      return unless !/.*?\.(jpg|png|jpeg|jpg|gif|pdf|doc|xls|docx|xslx)/.match(thumb).nil?
+      return unless !/.*?\.(jpg|png|jpeg||gif|pdf|doc|xls|docx|xslx)/i.match(thumb).nil?
       begin
         path = Uploads::Fs.create_path_if_not_exists @rep.join('images', 'list')
         _th = Uploads::Helper::clean_url File.basename thumb
-        open(File.dirname(thumb) + "/" + _th) { |f|
+        f_name = File.dirname(thumb) + '/' + _th
+        open(f_name) { |f|
           image_name = path.to_s + File::SEPARATOR + File.basename(thumb)
           File.open(image_name, 'wb') do |file|
             file.puts f.read
@@ -151,17 +152,17 @@ module CitiSoapLoader
     end
 
     def cache_image_by_url(item, url, target = 'sales')
-      return unless !/.*?\.(jpg|png|jpeg|jpg|gif|pdf|doc|xls|docx|xslx)/.match(url).nil?
+      return unless !/.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
       begin
         case target
           when 'rentals'
-            id_key = "id_object_location"
+            id_key = 'id_object_location'
           when 'sales'
-            id_key = "object_id"
+            id_key = 'object_id'
         end
         path = Uploads::Fs.create_if_not_exists @rep.join('images'), item[id_key]
         _th = Uploads::Helper::clean_url File.basename url
-        open(File.dirname(url) + "/" + _th) { |f|
+        open(File.dirname(url) + '/' + _th) { |f|
           image_name = path.to_s + File::SEPARATOR + File.basename(url)
           File.open(image_name, 'wb') do |file|
             file.puts f.read
@@ -1035,9 +1036,9 @@ module CitiSoapLoader
     def connect(channel_id, username, password)
       channel_id ||= 3
       message = {
-          "channelId" => channel_id,
-          "channelUserName" => username,
-          "channelUserPwd" => password}
+          'channelId' => channel_id,
+          'channelUserName' => username,
+          'channelUserPwd' => password}
       response = @client.call(:connect_channel, message: message)
 
       session_id = response.to_hash[:connect_channel_response][:connect_channel_result]
@@ -1045,7 +1046,7 @@ module CitiSoapLoader
 
     # check connection
     def is_connected(session_id)
-      message = {"sessionKey" => session_id}
+      message = {'sessionKey' => session_id}
       response = @client.call(:is_connected, message: message)
 
       is_connected = response.to_hash[:is_connected_response][:is_connected_result]
@@ -1053,8 +1054,8 @@ module CitiSoapLoader
 
     # disconnection
     def disconnect(session_id)
-      message = {"sessionKey" => session_id}
-      response = @client.call(:dis_connect, message)
+      message = {'sessionKey' => session_id}
+      response = @client.call(:dis_connect, message: message)
 
       result = response.to_hash[:dis_connect_response][:dis_connect_result]
     end
@@ -1064,7 +1065,7 @@ module CitiSoapLoader
       if !is_connected session_id
         connect channel_id, username, password
       end
-      message = {"sessionKey" => session_id}
+      message = {'sessionKey' => session_id}
       response = @client.call(:get_default_language, message: message)
 
       result = response.to_hash[:get_default_language_response][:get_default_language_result]
@@ -1076,7 +1077,7 @@ module CitiSoapLoader
       if !is_connected session_id
         connection channel_id, username, password
       end
-      message = {"sessionKey" => session_id, "languageId" => lang}
+      message = {'sessionKey' => session_id, 'languageId' => lang}
       response = @client.call(:set_default_language, message: message)
 
       result = response.to_hash[:set_default_language_response][:set_default_language_result]

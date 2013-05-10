@@ -5,22 +5,92 @@ class Import::AgencyController < ApplicationController
 
   respond_to :xml, :json, :html
 
-  DEFAULT_LANG                = 'fr'
-  DEFAULT_REDO_CACHE_LIST     = true
-  DEFAULT_REDO_CACHE_DETAILS  = true
-  DEFAULT_REDO_CACHE_IMAGES   = true
-  DEFAULT_REBUILD_INDEX       = true
-  LOADER_DEBUG_MODE           = true
+  DEFAULT_LANG = 'fr'
+  DEFAULT_REDO_CACHE_LIST = true
+  DEFAULT_REDO_CACHE_DETAILS = true
+  DEFAULT_REDO_CACHE_IMAGES = true
+  DEFAULT_REBUILD_INDEX = true
+  LOADER_DEBUG_MODE = true
 
   @rentals_season_loader = nil
   @rentals_common_loder = nil
   @sales_loader = nil
+
+  def reindex_item
+    agency_id = params[:agency_id]
+    endpoint = params[:endpoint]
+    channel_id = params[:channel_id]
+    username = params[:username]
+    password = params[:password]
+    item_id = params[:item_id]
+    supported_endpoint = %w(rentals sales season)
+    connection = nil
+    @response = nil
+
+    lang = params[:hl] || DEFAULT_LANG
+    begin
+      if supported_endpoint.include? endpoint
+        case endpoint
+          when 'sales' then
+            connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V1
+            cache = CitiSoapLoader::Cache.new agency_id, 'sales'
+          when 'rentals' then
+            cache = CitiSoapLoader::Cache.new agency_id, 'rentals'
+            connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
+          when 'season' then
+            cache = CitiSoapLoader::Cache.new agency_id, 'rentals'
+            connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
+          else
+            raise ArgumentError, 'Feed is not supported by the api'
+        end
+        session_id = connection.connect channel_id, username, password
+        logger.debug 'Session id is %s' % [session_id]
+        case endpoint
+          when 'sales' then
+            loader = CitiSoapLoader::Sales.new session_id, agency_id
+          when 'rentals' then
+            loader = CitiSoapLoader::Rentals.new session_id, agency_id
+          when 'season' then
+            loader = CitiSoapLoader::Season.new session_id, agency_id
+          else
+            raise ArgumentError, 'Feed is not supported by the api'
+        end
+        item_details = loader.load_details item_id, lang
+        json_item = nil
+        case endpoint
+          when 'sales' then
+            cache.store(lang + '_' + item_details[:object_courtage][:object_id], 'json', item_details[:object_courtage])
+            json_item = cache.load(lang + '_' + item_details[:object_courtage][:object_id] + '.json')
+          when 'rentals' then
+            cache.store(lang + '_' + item_details[:object_location][:id_object_location], 'json', item_details[:object_location])
+            json_item = cache.load(lang + '_' + item_details[:object_location][:id_object_location] + '.json')
+          when 'season' then
+            cache.store(lang + '_' + item_details[:object_location][:id_object_location], 'json', item_details[:object_location])
+            json_item = cache.load(lang + '_' + item_details[:object_location][:id_object_location] + '.json')
+          else
+            raise ArgumentError, 'Feed is not supported by the api'
+        end
+        if !json_item.nil?
+          cache.store_image_for_list json_item[:thumb_nail_url].nil? ? json_item['thumb_nail_url'] : json_item[:thumb_nail_url]
+          cache_images json_item, cache, endpoint
+        end
+        connection.disconnect session_id
+        @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :object => item_details}}
+      else
+        @response = {:statusCode => 1, :statusMessage => 'Error', :content => {:agency_id => agency_id, :info => 'Wrong endpoint specified'}}
+      end
+    rescue Exception => exception
+      @response = {:statusCode => 1, :statusMessage => 'Error', :content => {:agency_id => agency_id, :info => exception.message, :exception => exception}}
+    end
+    respond_with @response
+  end
 
   def do_fill_agency_info
     # TODO : add this part to the configuration settings
     channel_id = 3
     username = 'CITI_COURTAGE_PERSO'
     password = 'LetMeIn_Now_Courtage_Perso'
+    @response = nil
 
     redo_cache_list = params[:cache_list].nil? ? DEFAULT_REDO_CACHE_LIST : params[:cache_list] == 1
     redo_cache_details = params[:cache_details].nil? ? DEFAULT_REDO_CACHE_DETAILS : params[:cache_details] == 1
@@ -30,22 +100,22 @@ class Import::AgencyController < ApplicationController
     lang = params[:hl] || DEFAULT_LANG
 
     connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V1
-    session_id = connection.connect(channel_id, username, password)
+    session_id = connection.connect channel_id, username, password
     agency_id = params[:agency_id]
-    cache = CitiSoapLoader::Cache.new(agency_id, 'sales')
+    cache = CitiSoapLoader::Cache.new agency_id, 'sales'
 
-    loader = CitiSoapLoader::Sales.new(session_id, agency_id)
+    loader = CitiSoapLoader::Sales.new session_id, agency_id
     object_list = loader.load_list
-    cache.store(lang + ' ' + 'list', 'json', object_list[:object_courtage_simple]) unless !redo_cache_list
+    cache.store(lang + '_' + 'list', 'json', object_list[:object_courtage_simple]) unless !redo_cache_list
     if object_list.nil? || !redo_cache_details
       @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :nb_objects => 0}}
     else
       object_list[:object_courtage_simple].each { |p|
         cache.delete_image_cache_rep_for_item_id p[:object_id]
         object_detail = loader.load_detail p[:object_id], lang
-        cache.store(lang + ' ' + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
+        cache.store(lang + '_' + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
         if redo_cache_image
-          o = cache.load(lang + ' ' + object_detail[:object_courtage][:object_id] + '.json')
+          o = cache.load(lang + '_' + object_detail[:object_courtage][:object_id] + '.json')
           cache.store_image_for_list o[:thumb_nail_url].nil? ? o['thumb_nail_url'] : o[:thumb_nail_url]
           cache_images o, cache
         end
@@ -108,7 +178,7 @@ class Import::AgencyController < ApplicationController
       object_list[:object_courtage_simple].each { |p|
         object_detail = loader.load_detail p[:object_id], lang
         cache_images object_detail, cache
-        cache.store(lang + ' ' + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
+        cache.store(lang + '_' + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
       }
       begin
         indexer = CitiSoapLoader::Indexer.new
@@ -127,7 +197,7 @@ class Import::AgencyController < ApplicationController
     base_url = 'http://www.RentAlp.ch/ObjectImages/'
     images = item['object_images']['object_image']
     images = [images] if images.class != Array
-    images.each{|img|
+    images.each { |img|
       next unless !img['unc_path_source'].nil?
       image_url = base_url + img['unc_path_source'].gsub('\\', '/')
       cache.cache_image_by_url item, image_url, target
@@ -251,7 +321,7 @@ class Import::AgencyController < ApplicationController
     @response
   end
 
-  def  load_rentals_list
+  def load_rentals_list
     lang_to_fill = %w(fr en)
     params[:rebuild_cache] = true
 
@@ -293,7 +363,7 @@ class Import::AgencyController < ApplicationController
     if object_list.nil?
       @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :nb_objects => 0}}
     else
-      object_list.each{ |item|
+      object_list.each { |item|
         object_detail = loader.load_details item[:id_object_location], lang
         cache.store(lang + "_" + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
         obj = cache.load(lang + "_" + object_detail[:object_location][:id_object_location] + '.json')
