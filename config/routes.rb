@@ -60,6 +60,7 @@ Ssv01::Application.routes.draw do
     match "/load_rentals_details/:agency_id" => "agency#load_rentals_details", :via => :get
     match "/:agency_id/test" => "agency#test", :via => :get
     match "/:agency_id/:endpoint/:channel_id/reindex_item/:item_id" => "agency#reindex_item", :via => :get
+    match "/:agency_id/:endpoint/rebuild_index" => "agency#rebuild_index", :via => :get
   end
 
   # routes for administration namespace

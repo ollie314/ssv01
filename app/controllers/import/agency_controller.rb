@@ -85,6 +85,25 @@ class Import::AgencyController < ApplicationController
     respond_with @response
   end
 
+  def rebuild_index
+    agency_id = params[:agency_id]
+    endpoint = params[:endpoint]
+    indexer = CitiSoapLoader::Indexer.new
+    reindex_status = 1
+    begin
+      indexer.create_index agency_id, endpoint, request, 'index_props'
+      reindex_status = 0
+      reindex_message = 'Success'
+      content = {:message => "Reindexation successfully made."}
+    rescue Exception => e
+      reindex_status = 1
+      reindex_message = 'Failure'
+      content = {:message => e.message, :ex => e}
+    end
+    @response = {:statusCode => reindex_status, :statusMessage => reindex_message, :content => content}
+    respond_with @response
+  end
+
   def do_fill_agency_info
     # TODO : add this part to the configuration settings
     channel_id = 3
