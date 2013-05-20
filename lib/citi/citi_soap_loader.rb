@@ -83,7 +83,7 @@ module CitiSoapLoader
 
     # store data into the cache
     def store(filename, extension, data)
-      f_cache = File.new("%s/%s.%s" % [@rep.to_s, filename, extension], 'w')
+      f_cache = File.new('%s/%s.%s' % [@rep.to_s, filename, extension], 'w')
       JSON.dump(data, f_cache)
       f_cache.flush
       f_cache.close
@@ -119,7 +119,7 @@ module CitiSoapLoader
     end
 
     def store_image_for_list(thumb)
-      return unless !/.*?\.(jpg|png|jpeg||gif|pdf|doc|xls|docx|xslx)/i.match(thumb).nil?
+      return if /.*?\.(jpg|png|jpeg||gif|pdf|doc|xls|docx|xslx)/i.match(thumb).nil?
       begin
         path = Uploads::Fs.create_path_if_not_exists @rep.join('images', 'list')
         _th = Uploads::Helper::clean_url File.basename thumb
@@ -176,7 +176,7 @@ module CitiSoapLoader
     end
 
     def cache_image_from_url(item, url, img_name, target = 'sales')
-      return unless !/.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
+      return if /.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
       begin
         case target
           when 'rentals'
@@ -243,7 +243,7 @@ module CitiSoapLoader
       }
       cpt = 0
       @rep.children.each { |file|
-        basename = File.basename(file, ".json")
+        basename = File.basename(file, '.json')
         next unless !File.directory? file or ids.includes? basename
         begin
           File.delete file
@@ -270,13 +270,13 @@ module CitiSoapLoader
 
     def get_kind(obj_kind_label)
       case obj_kind_label
-        when "appartement"
+        when 'appartement'
           return 1
-        when "chalet"
+        when 'chalet'
           return 2
-        when "terrain"
+        when 'terrain'
           return 3
-        when "place de parc"
+        when 'place de parc'
           return 4
         else
           return 0
@@ -308,125 +308,136 @@ module CitiSoapLoader
       #    "picture" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg"
       #},
       ###
-      result[:id] = obj["object_id"]
-      result[:name] = obj["object_name"]
-      result[:nb_room] = obj["object_number_of_rooms"]
-      result[:nb_floor] = obj["object_number_of_rooms"]
-      result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
-      result[:price] = obj["object_courtage_selling_price"]
-      result[:new] = obj["object_courtage_is_new"]
-      result[:reserved] = obj["object_courtage_reserved"]
-      result[:sellable_to_foreigner] = obj["object_courtage_sellable_to_foreigners"]
-      result[:reserved] = obj["object_courtage_reserved"]
-      result[:kind] = get_kind obj["object_type_label"]
-      result[:kind_description] = {lang => obj["object_type_label"]}
-      result[:attachments] = index[obj["object_id"]] unless index.nil?
+      result[:id] = obj['object_id']
+      result[:name] = obj['object_name']
+      result[:nb_room] = obj['object_number_of_rooms']
+      result[:nb_floor] = obj['object_number_of_rooms']
+      result[:main_picture] = '%s%s/cache/%s/sales/images/list/%s' % [@request.protocol, @request.host_with_port, obj[agency_info]['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      result[:price] = obj['object_courtage_selling_price']
+      result[:new] = obj['object_courtage_is_new']
+      result[:reserved] = obj['object_courtage_reserved']
+      result[:sellable_to_foreigner] = obj['object_courtage_sellable_to_foreigners']
+      result[:reserved] = obj['object_courtage_reserved']
+      result[:kind] = get_kind obj['object_type_label']
+      result[:kind_description] = {lang => obj['object_type_label']}
+      result[:attachments] = index[obj['object_id']] unless index.nil?
       result
     end
 
     def translate_for_list_rentals(obj, index = nil, lang = nil)
-      lang ||= 'fr'
+      lang = lang.nil? ? 'fr' : lang
       result = {}
-      result[:id] = obj["id_object_location"]
-      result[:name] = obj["object_name"]
-      result[:floor_size] = obj["floor_size"]
-      result[:number_of_rooms] = obj["number_of_rooms"]
-      result[:number_of_bedrooms] = obj["number_of_bedrooms"]
-      result[:number_of_bathrooms] = obj["number_of_bathrooms"]
-      result[:main_picture] = "%s%s/cache/%s/rentals/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
-      result[:kind] = obj["id_object_type"]
-      result[:kind_description] = get_kind obj["object_type_name"]
-      result[:attachments] = index[obj["id_object_location"]] unless index.nil?
+      result[:id] = obj['id_object_location']
+      result[:name] = obj['object_name']
+      result[:floor_size] = obj['floor_size']
+      result[:number_of_rooms] = obj['number_of_rooms']
+      result[:number_of_bedrooms] = obj['number_of_bedrooms']
+      result[:number_of_bathrooms] = obj['number_of_bathrooms']
+      result[:main_picture] = '%s%s/cache/%s/rentals/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      result[:kind] = obj['id_object_type']
+      result[:kind_description] = get_kind obj['object_type_name']
+      result[:attachments] = index[obj['id_object_location']] unless index.nil?
       result
     end
 
     def translate_for_details_rentals(obj, index = nil, lang = nil)
       lang = lang.nil? ? 'fr' : lang
       result = {}
-      result[:id] = obj["id_object_location"]
-      result[:name] = obj["object_name"]
-      result[:floor_size] = obj["floor_size"]
-      result[:number_of_rooms] = obj["number_of_rooms"]
-      result[:main_picture] = "%s%s/cache/%s/rentals/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
+      result[:id] = obj['id_object_location']
+      result[:name] = obj['object_name']
+      result[:floor_size] = obj['floor_size']
+      result[:number_of_rooms] = obj['number_of_rooms']
+      result[:main_picture] = '%s%s/cache/%s/rentals/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
       #result[:main_picture] = "%s%s/cache/%s/rentals/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/')).gsub(/70/, '230').gsub(/640/,'300')]
-      result[:kind] = obj["id_object_type"]
-      result[:kind_description] = get_kind obj["object_type_name"]
-      result[:external_info] = "http://vittel.rentalp.ch/rentalp.aspx?ID_Object=%s&ObjectName=&ID_Agency=%s&lng=%s&callbackUrl=%s&backgroundUrl=%s" % [
-          obj["object_remote_id"],
-          obj["agency_info"]["id_agency"],
+      result[:kind] = obj['id_object_type']
+      result[:kind_description] = get_kind obj['object_type_name']
+      result[:external_info] = 'http://vittel.rentalp.ch/rentalp.aspx?ID_Object=%s&ObjectName=&ID_Agency=%s&lng=%s&callbackUrl=%s&backgroundUrl=%s' % [
+          obj['object_remote_id'],
+          obj['agency_info']['id_agency'],
           lang,
-          @request.referer.nil? ? obj["agency_info"]["website"] : @request.referer,
-          @request.referer.nil? ? obj["agency_info"]["website"] : @request.referer,
+          @request.referer.nil? ? obj['agency_info']['website'] : @request.referer,
+          @request.referer.nil? ? obj['agency_info']['website'] : @request.referer,
       ]
 
-      result[:summary] = {
-          lang => obj["object_courtage_promo"]
+      result[:promotion] = {
+          lang => obj['object_courtage_promo']
       }
 
       begin
-        if obj["object_descriptions"]["object_description"].class == Array
-          #descriptions = Array.new
-          last = nil
-          obj["object_descriptions"]["object_description"].each { |descr|
-            retains = last.nil? ? true : (descr["sort_order"] > last["sort_order"])
-            last = descr if retains
+        if obj['object_descriptions']['object_description'].class == Array
+          summary = nil
+          description = nil
+          obj['object_descriptions']['object_description'].each { |descr|
+            if Integer(descr['sort_order']) == 0
+              summary = descr['translated_description']
+            else
+              description = descr['translated_description']
+            end
+          }
+          result[:summary] = {
+              lang => summary
           }
           result[:description] = {
-              lang => last["translated_description"]
+              lang => description
           }
         else
+          result[:summary] = {
+              lang => nil
+          }
           result[:description] = {
-              lang => obj["object_descriptions"]["object_description"]["translated_description"]
+              lang => obj['object_descriptions']['object_description']['translated_description']
           }
         end
       rescue
+        result[:summary] = {
+            lang => nil
+        }
         result[:description] = {
             lang => nil
         }
       end
-
       result[:price_range] = {
-          :lowest => obj["lowest_price_for_period"],
-          :highest => obj["highest_price_for_period"],
-          :avg_daily_price => obj["avg_daily_price"]
+          :lowest => obj['lowest_price_for_period'],
+          :highest => obj['highest_price_for_period'],
+          :avg_daily_price => obj['avg_daily_price']
       }
 
       result[:properties] = list_properties_rentals obj
 
       # Add floor
       floor = {
-          :key => "floor",
-          :value => obj["floor_type_enum"]["translated_label_enum"],
-          :type => "string"
+          :key => 'floor',
+          :value => obj['floor_type_enum']['translated_label_enum'],
+          :type => 'string'
       }
       result[:properties].push(floor)
 
       # Add category
       cat = {
-          :key => "category",
-          :value => obj["self_assessement_enum"]["translated_label_enum"],
-          :type => "string"
+          :key => 'category',
+          :value => obj['self_assessement_enum']['translated_label_enum'],
+          :type => 'string'
       }
       result[:properties].push(cat)
 
       # Add parking
-      park_type = obj["parking_enum"]["code_enum"]
+      park_type = obj['parking_enum']['code_enum']
       case park_type
-        when "MULTI_STOREY"
-          supported_types = ["Covered", "shared parking"]
-          types = String(obj["parking_enum"]["translated_label_enum"]).split(",")
+        when 'MULTI_STOREY'
+          supported_types = ['Covered', 'shared parking']
+          types = String(obj['parking_enum']['translated_label_enum']).split(",")
           indoor_park = types.include? supported_types[0]
           shared_park = types.include? supported_types[1]
           outdoor_park = FALSE
-        when "COVERED_LOT"
+        when 'COVERED_LOT'
           indoor_park = TRUE
           shared_park = TRUE
           outdoor_park = FALSE
-        when "OPEN_LOT"
+        when 'OPEN_LOT'
           indoor_park = FALSE
           shared_park = TRUE
           outdoor_park = TRUE
-        when "GARAGE"
+        when 'GARAGE'
           indoor_park = TRUE
           shared_park = FALSE
           outdoor_park = FALSE
@@ -440,30 +451,30 @@ module CitiSoapLoader
 
       # Add balcony
       balcony = {
-          :key => "balcony",
-          :value => (!obj["extended_availability_balcony_enum"].nil? and obj["extended_availability_balcony_enum"]["id_enum"] != 0),
-          :type => "boolean"
+          :key => 'balcony',
+          :value => (!obj['extended_availability_balcony_enum'].nil? and obj['extended_availability_balcony_enum']['id_enum'] != 0),
+          :type => 'boolean'
       }
       result[:properties].push(balcony)
 
       # Add terrace
       balcony = {
-          :key => "terrace",
-          :value => (!obj["extended_availability_terrace_enum"].nil? and obj["extended_availability_terrace_enum"]["id_enum"] != 0),
-          :type => "boolean"
+          :key => 'terrace',
+          :value => (!obj['extended_availability_terrace_enum'].nil? and obj['extended_availability_terrace_enum']['id_enum'] != 0),
+          :type => 'boolean'
       }
       result[:properties].push(balcony)
 
       # Add Internet connection indication
       internet = {
-          :key => "internet",
-          :value => (!obj["internet_enum"].nil? and obj["internet_enum"]["id_enum"] != 0),
-          :type => "boolean"
+          :key => 'internet',
+          :value => (!obj['internet_enum'].nil? and obj['internet_enum']['id_enum'] != 0),
+          :type => 'boolean'
       }
       result[:properties].push(internet)
 
 
-      result[:attachments] = create_list_attachments obj, "rentals"
+      result[:attachments] = create_list_attachments obj, 'rentals'
 
       result[:address] = create_address_rental obj
       result[:location] = create_location obj
@@ -473,119 +484,7 @@ module CitiSoapLoader
 
     def list_properties_rentals(item)
       properties = []
-      handled = [
-          "has_washingmachine",
-          "has_drying_room",
-          "has_dryer",
-          "has_heating",
-          "has_air_condition",
-          "has_elevator",
-          "has_recreational_room",
-          "has_storage",
-          "has_sauna",
-          "has_sun_bed",
-          "has_indoor_pool",
-          "has_whirlpool",
-          "has_steam_bath",
-          "floor_size",
-          "number_of_rooms",
-          "number_of_bedrooms",
-          "number_of_bathrooms",
-          "number_of_toilets",
-          "max_number_of_babies",
-          "min_number_of_babies",
-          "max_number_of_children",
-          "min_number_of_children",
-          "max_number_of_adults",
-          "min_number_of_adults",
-          "max_number_of_seniors",
-          "min_number_of_seniors",
-          "max_number_of_persons",
-          "min_number_of_persons",
-          "additional_number_of_children",
-          "has_snow_cleaning",
-          "has_gardener",
-          "has_separate_garbage_collection",
-          "has_compost",
-          "has_quality_seal",
-          "is_protected_building",
-          "year",
-          "has_additional_room",
-          "has_tv_receiver",
-          "is_family_friendly",
-          "has_kitchen_material",
-          "is_windows_intact",
-          "is_furniture_intact",
-          "is_devices_intact",
-          "is_floor_and_walls_intact",
-          "is_bathtube_and_washbasin_intact",
-          "is_lighting_intact",
-          "is_temperature_ok",
-          "is_inscription_intact",
-          "is_mattresses_intact",
-          "is_hot_water_intact",
-          "is_place_without_cars",
-          "has_laundry_service",
-          "has_eu_environtment_seal",
-          "has_farm_holiday_seal",
-          "has_lost_item_return",
-          "has_welcome_gift",
-          "price_bed_sheets",
-          "price_kitchen_towel",
-          "price_bath_towels",
-          "price_final_cleaning",
-          "price_parking",
-          "price_bail",
-          "price_handling_charge",
-          "is_tourist_tax_included",
-          "has_response_to_inquiries_within2_working_days",
-          "has_everything_on_the_offer",
-          "has_information_about_information_center",
-          "is_the_contracts_in_writing",
-          "has_important_phone_number_list",
-          "has_personal_contact_in_the_first24_hours",
-          "has_noise",
-          "label_route_description",
-          "label_detail_url",
-          "label_booking_url",
-          "label_availability_url",
-          "label_promo_internet",
-          "label_remark",
-          "label_final_cleaning",
-          "label_kitchen_towels",
-          "label_bath_towels",
-          "label_tourist_tax",
-          "label_parking",
-          "label_pets",
-          "label_annulation_insurance",
-          "label_bail",
-          "label_handling_charge",
-          "has_ski_area_access",
-          "label_wet_room_specials",
-          "label_kitchen_specials",
-          "label_special_services",
-          "label_price_specials",
-          "has_video",
-          "has_dvd",
-          "has_cd",
-          "has_telephone", "is_pet_allowed",
-          "is_non_smoking",
-          "is_sleeping_room",
-          "has_dining_table",
-          "has_arm_chair",
-          "has_fire_place",
-          "number_of_hotplates",
-          "has_oven",
-          "has_vent",
-          "has_microwave",
-          "has_dish_washer",
-          "has_fridge",
-          "has_private_beach",
-          "has_jetty",
-          "has_playground",
-          "has_garden_furniture",
-          "has_barbecue"
-      ]
+      handled = %w(has_washingmachine has_drying_room has_dryer has_heating has_air_condition has_elevator has_recreational_room has_storage has_sauna has_sun_bed has_indoor_pool has_whirlpool has_steam_bath floor_size number_of_rooms number_of_bedrooms number_of_bathrooms number_of_toilets max_number_of_babies min_number_of_babies max_number_of_children min_number_of_children max_number_of_adults min_number_of_adults max_number_of_seniors min_number_of_seniors max_number_of_persons min_number_of_persons additional_number_of_children has_snow_cleaning has_gardener has_separate_garbage_collection has_compost has_quality_seal is_protected_building year has_additional_room has_tv_receiver is_family_friendly has_kitchen_material is_windows_intact is_furniture_intact is_devices_intact is_floor_and_walls_intact is_bathtube_and_washbasin_intact is_lighting_intact is_temperature_ok is_inscription_intact is_mattresses_intact is_hot_water_intact is_place_without_cars has_laundry_service has_eu_environtment_seal has_farm_holiday_seal has_lost_item_return has_welcome_gift price_bed_sheets price_kitchen_towel price_bath_towels price_final_cleaning price_parking price_bail price_handling_charge is_tourist_tax_included has_response_to_inquiries_within2_working_days has_everything_on_the_offer has_information_about_information_center is_the_contracts_in_writing has_important_phone_number_list has_personal_contact_in_the_first24_hours has_noise label_route_description label_detail_url label_booking_url label_availability_url label_promo_internet label_remark label_final_cleaning label_kitchen_towels label_bath_towels label_tourist_tax label_parking label_pets label_annulation_insurance label_bail label_handling_charge has_ski_area_access label_wet_room_specials label_kitchen_specials label_special_services label_price_specials has_video has_dvd has_cd has_telephone is_pet_allowed is_non_smoking is_sleeping_room has_dining_table has_arm_chair has_fire_place number_of_hotplates has_oven has_vent has_microwave has_dish_washer has_fridge has_private_beach has_jetty has_playground has_garden_furniture has_barbecue)
 
       booleans = [FalseClass, TrueClass]
       item.keys.each { |k|
@@ -593,13 +492,13 @@ module CitiSoapLoader
         v = item[k]
         t = item[k].class
         if nil === v
-          t = "null"
+          t = 'null'
         else
           if booleans.include? t
-            t = "boolean"
+            t = 'boolean'
           else
             if !nan? v
-              t = (Float(v).nan? || v.index('.').nil?) ? "number" : "float"
+              t = (Float(v).nan? || v.index('.').nil?) ? 'number' : 'float'
             else
               t = t.to_s.downcase
             end
@@ -626,7 +525,7 @@ module CitiSoapLoader
     def translate_for_details(obj, lang = nil)
       lang ||= 'fr'
       result = {}
-      result[:id] = obj["object_id"]
+      result[:id] = obj['object_id']
       result[:name] = obj["object_name"]
       result[:nb_room] = obj["object_number_of_rooms"]
       result[:nb_floor] = obj["object_number_of_rooms"]
@@ -773,86 +672,7 @@ module CitiSoapLoader
 
     def list_properties(item)
       properties = []
-      handled = [
-          'regie_rent_amount_net',
-          'regie_rent_amount_extra',
-          'regie_rent_amount_duration',
-          'tbc_nb_of_rooms_nb_of_rooms',
-          'object_number_of_floors',
-          'object_number_of_full_bathrooms',
-          'object_number_of_half_bathrooms',
-          'object_number_of_shower_only',
-          'object_separated_toilet',
-          'object_property_surface',
-          'object_living_space',
-          'object_volume',
-          'object_wheel_chair_access',
-          'object_fire_place',
-          'object_parking',
-          'object_garage',
-          'object_sauna',
-          'object_laundry_room',
-          'object_balcony',
-          'object_terrasse',
-          'object_ramp',
-          'object_internal_plan_situation',
-          'object_courtage_land_surface',
-          'object_courtage_living_space_surface',
-          'object_courtage_lawn_surface',
-          'object_courtage_storage_room_space',
-          'object_courtage_balcony_surface',
-          'object_courtage_half_balcony_surface',
-          'object_courtage_half_balcony_surface_included',
-          'object_courtage_suppl_furniture_price',
-          'object_courtage_park_price_included',
-          'object_courtage_charges',
-          'object_courtage_renovation_date',
-          'object_courtage_renovation_funds',
-          'object_courtage_renovation_funds_desc',
-          'object_courtage_is_new',
-          'object_courtage_square_meter_price',
-          'object_courtage_number_of_storage_rooms',
-          'object_courtage_coefficient',
-          'object_courtage_parcelle_number',
-          'object_courtage_acquisition_date',
-          'object_courtage_construction_date',
-          'object_courtage_sellable_to_foreigners',
-          'object_courtage_reserved',
-          'object_cable_net_work',
-          'object_courtage_cable',
-          'object_courtage_elevator',
-          'object_courtage_internet',
-          'object_courtage_water_supply',
-          'object_courtage_sewage_supply',
-          'object_courtage_power_supply',
-          'object_courtage_gas_supply',
-          'object_courtage_sold',
-          'object_courtage_ppe_thousanth',
-          'object_courtage_years_charges',
-          'object_courtage_years_funds',
-          'object_courtage_ppe_number',
-          'object_poles_location_label',
-          'object_resort_altitude',
-          'object_resort_population',
-          'object_resort_access_data',
-          'object_floor_type_label',
-          'object_heat_type_label',
-          'object_type_label',
-          'object_type_label_french',
-          'object_number_of_rooms_label',
-          'object_object_access_label',
-          'object_courtage_charges_note',
-          'object_courtage_price_notes',
-          'object_courtage_general_remarks',
-          'object_courtage_zoning',
-          'object_courtage_parking_notes',
-          'object_courtage_reference',
-          'object_courtage_ppe_info',
-          'object_courtage_furniture_info',
-          'object_add_number',
-          'object_courtage_selling_price',
-          'object_courtage_selling_price_object_only',
-      ]
+      handled = %w(regie_rent_amount_net regie_rent_amount_extra regie_rent_amount_duration tbc_nb_of_rooms_nb_of_rooms object_number_of_floors object_number_of_full_bathrooms object_number_of_half_bathrooms object_number_of_shower_only object_separated_toilet object_property_surface object_living_space object_volume object_wheel_chair_access object_fire_place object_parking object_garage object_sauna object_laundry_room object_balcony object_terrasse object_ramp object_internal_plan_situation object_courtage_land_surface object_courtage_living_space_surface object_courtage_lawn_surface object_courtage_storage_room_space object_courtage_balcony_surface object_courtage_half_balcony_surface object_courtage_half_balcony_surface_included object_courtage_suppl_furniture_price object_courtage_park_price_included object_courtage_charges object_courtage_renovation_date object_courtage_renovation_funds object_courtage_renovation_funds_desc object_courtage_is_new object_courtage_square_meter_price object_courtage_number_of_storage_rooms object_courtage_coefficient object_courtage_parcelle_number object_courtage_acquisition_date object_courtage_construction_date object_courtage_sellable_to_foreigners object_courtage_reserved object_cable_net_work object_courtage_cable object_courtage_elevator object_courtage_internet object_courtage_water_supply object_courtage_sewage_supply object_courtage_power_supply object_courtage_gas_supply object_courtage_sold object_courtage_ppe_thousanth object_courtage_years_charges object_courtage_years_funds object_courtage_ppe_number object_poles_location_label object_resort_altitude object_resort_population object_resort_access_data object_floor_type_label object_heat_type_label object_type_label object_type_label_french object_number_of_rooms_label object_object_access_label object_courtage_charges_note object_courtage_price_notes object_courtage_general_remarks object_courtage_zoning object_courtage_parking_notes object_courtage_reference object_courtage_ppe_info object_courtage_furniture_info object_add_number object_courtage_selling_price object_courtage_selling_price_object_only)
 
       booleans = [FalseClass, TrueClass]
       item.keys.each { |k|
@@ -862,13 +682,13 @@ module CitiSoapLoader
         v = item[k]
         t = item[k].class
         if nil === v
-          t = "null"
+          t = 'null'
         else
           if booleans.include? t
-            t = "boolean"
+            t = 'boolean'
           else
             if !nan? v
-              t = (Float(v).nan? || v.index('.').nil?) ? "number" : "float"
+              t = (Float(v).nan? || v.index('.').nil?) ? 'number' : 'float'
             else
               t = t.to_s.downcase
             end
@@ -885,35 +705,31 @@ module CitiSoapLoader
       properties
     end
 
-    def nan?(val)
-      val !~ /^\s*[+-]?((\d+_?)*\d+(\.(\d+_?)*\d+)?|\.(\d+_?)*\d+)(\s*|([eE][+-]?(\d+_?)*\d+)\s*)$/
-    end
-
     def list_image(obj, endpoint = 'sales')
-      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       images = []
-      exts = ['.jpg', '.png', '.jpeg', '.gif']
-      if obj["object_images"]["object_image"].class == Array
-        obj["object_images"]["object_image"].each { |img|
+      exts = %w(.jpg .png .jpeg .gif)
+      if obj['object_images']['object_image'].class == Array
+        obj['object_images']['object_image'].each { |img|
           _img = create_image_info_from_cache img, obj, endpoint
           if exts.include? _img[:ext] || img[:kind] == 1
             images.push _img
           end
         }
       else
-        _img = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
+        _img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
         images.push _img unless !exts.include? _img[:ext] || img[:kind] != 1
       end
       images
     end
 
     def list_docs(obj, endpoint = 'sales')
-      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       plans = []
       exts = ['.pdf']
 
-      if obj["object_images"]["object_image"].class == Array
-        obj["object_images"]["object_image"].each { |item|
+      if obj['object_images']['object_image'].class == Array
+        obj['object_images']['object_image'].each { |item|
           _img = create_image_info_from_cache item, obj, endpoint
           if exts.include? _img[:ext]
             _img[:kind] = 2
@@ -921,7 +737,7 @@ module CitiSoapLoader
           end
         }
       else
-        _img = create_image_info obj["object_images"]["object_image"], endpoint
+        _img = create_image_info obj['object_images']['object_image'], endpoint
         if exts.include? _img[:ext]
           _img[:kind] = 2
           plans.push _img
@@ -931,15 +747,15 @@ module CitiSoapLoader
     end
 
     def list_plans(obj, endpoint = 'sales')
-      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       plans = []
-      if obj["object_images"]["object_image"].class == Array
-        obj["object_images"]["object_image"].each { |item|
+      if obj['object_images']['object_image'].class == Array
+        obj['object_images']['object_image'].each { |item|
           _img = create_image_info_from_cache item, obj, endpoint
           plans.push _img if _img[:kind] == 1 #or _img[:ext].sub(/\./,"") == "pdf"
         }
       else
-        _img = create_image_info_from_cache obj["object_images"]["object_image"], obj, endpoint
+        _img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
         if _img[:kind] == 1
           plans.push _img
         end
@@ -948,12 +764,12 @@ module CitiSoapLoader
     end
 
     def list_videos(obj, endpoint = 'sales')
-      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       videos = []
 
-      if obj["object_images"]["object_image"].class == Array
-        obj["object_images"]["object_image"].each { |item|
-          next if !check_for_video item
+      if obj['object_images']['object_image'].class == Array
+        obj['object_images']['object_image'].each { |item|
+          next unless has_video? item
           #video_url = 'http://www.youtube.com/embed/'
           video = create_video_object item
           if video[:kind] == 3
@@ -961,7 +777,7 @@ module CitiSoapLoader
           end
         }
       else
-        video = create_video_object obj["object_images"]["object_image"]
+        video = create_video_object obj['object_images']['object_image']
         if video[:kind] == 3
           videos.push video
         end
@@ -969,25 +785,19 @@ module CitiSoapLoader
       videos
     end
 
-    def check_for_pdf item
-      return false if item["url_large"].nil?
-      m = item["url_large"].match(/\,pdf/)
-      m.nil? or m.size > 0
-    end
-
     def list_virtual_visits(obj, endpoint = 'sales')
-      return [] unless !(obj["object_images"].nil? or obj["object_images"]["object_image"].nil?)
+      return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       visits = []
-      if obj["object_images"]["object_image"].class == Array
-        obj["object_images"]["object_image"].each { |item|
-          next if item["url_small"].nil? or check_for_video(item) or check_for_pdf item
+      if obj['object_images']['object_image'].class == Array
+        obj['object_images']['object_image'].each { |item|
+          next if item['url_small'].nil? or is_picture?(item['url_small']) or check_for_video(item) or check_for_pdf item
           visit = create_visit_object item
           if visit[:kind] == 4
             visits.push visit
           end
         }
       else
-        visit = create_visit_object obj["object_images"]["object_image"]
+        visit = create_visit_object obj['object_images']['object_image']
         if visit[:kind] == 4
           visits.push visit
         end
@@ -1015,27 +825,61 @@ module CitiSoapLoader
 
     private
     def check_for_video(item)
-      return false if item["url_small"].nil?
-      url = item["url_small"]
+      return false if item['url_small'].nil?
+      url = item['url_small']
       video_url = 'http://www.youtube.com/embed/'
+      m = /^(http:\/\/).+\.(jpg|jpeg|png|gif)$/.match url
+      return false if m.nil? or m.size > 0
+      url.include? video_url
+    end
+
+    def check_for_pdf item
+      return false if item['url_large'].nil?
+      m = item['url_large'].match(/\,pdf/)
+      m.nil? or m.size > 0
+    end
+
+    def nan?(val)
+      val !~ /^\s*[+-]?((\d+_?)*\d+(\.(\d+_?)*\d+)?|\.(\d+_?)*\d+)(\s*|([eE][+-]?(\d+_?)*\d+)\s*)$/
+    end
+
+    def is_pdf? item
+      return false if item['url_large'].nil?
+      m = item['url_large'].match(/\,pdf/)
+      return false if m.nil?
+      m.size > 0
+    end
+
+    def is_picture?(url)
+      m = /^(http:\/\/).+\.(jpg|jpeg|png|gif)$/.match url
+      return false if m.nil?
+      m.size > 0
+    end
+
+    def has_video?(item)
+      return false if item['url_small'].nil?
+      url = item['url_small']
+      video_url = 'http://www.youtube.com/embed/'
+      m = /^(http:\/\/).+\.(jpg|jpeg|png|gif)$/.match url
+      return false if m.nil? or m.size > 0
       url.include? video_url
     end
 
     def create_video_object(item)
       video = {
-          url: item["url_small"],
-          caption: item["label_title"].nil? ? item[:label_title] : item["label_title"],
-          description: item["label_description"].nil? ? item[:label_description] : item["label_description"],
+          url: item['url_small'],
+          caption: item['label_title'].nil? ? item[:label_title] : item['label_title'],
+          description: item['label_description'].nil? ? item[:label_description] : item['label_description'],
           kind: 3,
           ext: nil
       }
     end
 
     def create_visit_object(item)
-      video = {
-          url: item["url_small"],
-          caption: item["label_title"].nil? ? item[:label_title] : item["label_title"],
-          description: item["label_description"].nil? ? item[:label_description] : item["label_description"],
+      visit = {
+          url: item['url_small'],
+          caption: item['label_title'].nil? ? item[:label_title] : item['label_title'],
+          description: item['label_description'].nil? ? item[:label_description] : item['label_description'],
           kind: 4,
           ext: nil
       }
@@ -1045,8 +889,8 @@ module CitiSoapLoader
 
   class Connection
 
-    WSDL_API_V1 = "http://wspublication.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL"
-    WSDL_API_V2 = "http://wspublicationv2.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL"
+    WSDL_API_V1 = 'http://wspublication.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL'
+    WSDL_API_V2 = 'http://wspublicationv2.rentalp.ch/CITI_WS_SESSION_Channel.asmx?WSDL'
 
     # constructor
     def initialize(endpoint_wsdl)
@@ -1222,10 +1066,10 @@ module CitiSoapLoader
       set_default_lang lang
 
       message = {
-          "sessionKey" => @session_id,
-          "objectLocationId" => obj_id,
-          "ThumbNailWidth" => @thumbnail_width,
-          "ThumNailHeight" => @thumbnail_height
+          'sessionKey' => @session_id,
+          'objectLocationId' => obj_id,
+          'ThumbNailWidth' => @thumbnail_width,
+          'ThumNailHeight' => @thumbnail_height
       }
 
       response = @client.call(:get_object_location, message: message)

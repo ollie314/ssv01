@@ -403,8 +403,8 @@ class Import::AgencyController < ApplicationController
     else
       object_list.each { |item|
         object_detail = loader.load_details item[:id_object_location], lang
-        cache.store(lang + "_" + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
-        obj = cache.load(lang + "_" + object_detail[:object_location][:id_object_location] + '.json')
+        cache.store(lang + '_' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
+        obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
         cache_images obj, cache, 'rentals'
       }
       begin
