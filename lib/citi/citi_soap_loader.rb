@@ -312,7 +312,7 @@ module CitiSoapLoader
       result[:name] = obj['object_name']
       result[:nb_room] = obj['object_number_of_rooms']
       result[:nb_floor] = obj['object_number_of_rooms']
-      result[:main_picture] = '%s%s/cache/%s/sales/images/list/%s' % [@request.protocol, @request.host_with_port, obj[agency_info]['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      result[:main_picture] = '%s%s/cache/%s/sales/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
       result[:price] = obj['object_courtage_selling_price']
       result[:new] = obj['object_courtage_is_new']
       result[:reserved] = obj['object_courtage_reserved']
@@ -649,24 +649,24 @@ module CitiSoapLoader
     end
 
     def create_image_info_from_cache(img, item, endpoint = 'sales')
-      _img = img["unc_path_source"].nil? ? img[:unc_path_source] : img["unc_path_source"]
+      _img = img['unc_path_source'].nil? ? img[:unc_path_source] : img['unc_path_source']
       item_id = endpoint == 'sales' ? "object_id" : "id_object_location"
-      img_url = "%s%s/cache/%s/%s/images/%s/%s" % [@request.protocol,
+      img_url = '%s%s/cache/%s/%s/images/%s/%s' % [@request.protocol,
                                                    @request.host_with_port,
-                                                   item["agency_info"]["id_agency"],
+                                                   item['agency_info']['id_agency'],
                                                    endpoint,
                                                    item[item_id],
                                                    File.basename(_img.gsub(/\\+/, '/'))] unless _img.nil?
       if !_img.nil?
-        ck = img["object_image_courtage_type"].nil? ? img[:object_image_courtage_type] : img["object_image_courtage_type"]
-        k = (ck == 0 and File.extname(_img) == ".pdf") ? 3 : ck
+        ck = img['object_image_courtage_type'].nil? ? img[:object_image_courtage_type] : img['object_image_courtage_type']
+        k = (ck == 0 and File.extname(_img) == '.pdf') ? 3 : ck
       end
       image = {
           url: img_url,
-          caption: img["label_title"].nil? ? img[:label_title] : img["label_title"],
-          description: img["label_description"].nil? ? img[:label_description] : img["label_description"],
+          caption: img['label_title'].nil? ? img[:label_title] : img['label_title'],
+          description: img['label_description'].nil? ? img[:label_description] : img['label_description'],
           kind: ck,
-          ext: _img.nil? ? "" : File.extname(_img)
+          ext: _img.nil? ? '' : File.extname(_img)
       }
     end
 
