@@ -169,9 +169,13 @@ class Import::AgencyController < ApplicationController
     @response = do_fill_agency_info
     reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
 
-    logger.info 'Fetching url to refresh picture'
-    url = get_callback_url 'rentals'
-    r = open(url).read()
+    url = get_callback_url 'sales'
+    begin
+      logger.info 'Fetching url [%s] to refresh picture' % [url]
+      r = open(url).read()
+    rescue Exception => e
+      logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
+    end
 
     stop = Time.new
     duration = (stop - start) * 1000
@@ -210,6 +214,15 @@ class Import::AgencyController < ApplicationController
       rescue
         reindex_status = 0
       end
+
+      url = get_callback_url 'sales'
+      begin
+        logger.info 'Fetching url [%s] to refresh picture' % [url]
+        r = open(url).read()
+      rescue Exception => e
+        logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
+      end
+
       @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :nb_objects => object_list[:object_courtage_simple].count, :reindex_status => reindex_status}}
     end
     respond_with @response
@@ -376,9 +389,13 @@ class Import::AgencyController < ApplicationController
     @response = do_load_rentals_list
     reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
 
-    logger.info 'Fetching url to refresh picture'
     url = get_callback_url 'rentals'
-    r = open(url).read()
+    begin
+      logger.info 'Fetching url [%s] to refresh picture' % [url]
+      r = open(url).read()
+    rescue Exception => e
+      logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
+    end
 
     duration += @response[:content][:duration]
 
@@ -416,9 +433,15 @@ class Import::AgencyController < ApplicationController
         obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
         cache_images obj, cache, 'rentals'
       }
-      logger.info 'Fetching url to refresh picture'
+
       url = get_callback_url 'rentals'
-      r = open(url).read()
+      begin
+        logger.info 'Fetching url [%s] to refresh picture' % [url]
+        r = open(url).read()
+      rescue Exception => e
+        logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
+      end
+
       begin
         indexer = CitiSoapLoader::Indexer.new
         indexer.create_index agency_id, 'rentals', 'index_props_rentals'
