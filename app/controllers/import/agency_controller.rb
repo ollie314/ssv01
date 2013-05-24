@@ -529,6 +529,6 @@ class Import::AgencyController < ApplicationController
   private
   def get_callback_url(endpoint)
     callback_url_skel = "%s/api/update_cache.php?resource=%s"
-    callback_url_skel % ["#{request.protocol}#{request.host_with_port}", endpoint]
+    callback_url_skel % ["http://tpx.bessonimmobilier.ch", endpoint]
   end
 end
