@@ -467,14 +467,23 @@ class Import::AgencyController < ApplicationController
 
   def test
     agency_id = params[:agency_id]
+    endpoint = params[:endpoint] || 'sales'
+    callback_url_skel = "%s/api/update_cache.php?resource=%s"
     params[:hl] = 'en_US'
+    callback_request = callback_url_skel % ["#{request.protocol}#{request.host_with_port}", endpoint]
     lang = params[:hl]
     url = "#{request.protocol}#{request.host_with_port}"
     full_path = "#{request.fullpath}"
     o_full_path = "#{request.original_fullpath}"
     domain = "#{request.domain}"
     remote_addr = "#{request.remote_ip}"
-    @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:lang => lang, :url => url, :full_path => full_path, :original_full_path => o_full_path, :domain => domain, :remote_addr => remote_addr}}
+    @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:lang => lang,
+                                                                             :url => url,
+                                                                             :full_path => full_path,
+                                                                             :original_full_path => o_full_path,
+                                                                             :domain => domain,
+                                                                             :remote_addr => remote_addr,
+                                                                             :callback_url => callback_request}}
     respond_with @response
   end
 end
