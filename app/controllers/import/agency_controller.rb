@@ -223,7 +223,7 @@ class Import::AgencyController < ApplicationController
   end
 
   def cache_images(item, cache, target = 'sales')
-    return unless !item.nil?
+    return if item.nil? || item['object_images'].nil? || item['object_images']['object_image'].nil?
     base_url = 'http://www.RentAlp.ch/ObjectImages/'
     images = item['object_images']['object_image']
     images = [images] if images.class != Array
