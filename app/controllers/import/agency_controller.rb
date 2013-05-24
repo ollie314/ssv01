@@ -169,6 +169,10 @@ class Import::AgencyController < ApplicationController
     @response = do_fill_agency_info
     reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
 
+    logger.info 'Fetching url to refresh picture'
+    url = get_callback_url 'rentals'
+    r = open(url).read()
+
     stop = Time.new
     duration = (stop - start) * 1000
 
@@ -371,6 +375,11 @@ class Import::AgencyController < ApplicationController
     params[:hl] = lang_to_fill.pop
     @response = do_load_rentals_list
     reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
+
+    logger.info 'Fetching url to refresh picture'
+    url = get_callback_url 'rentals'
+    r = open(url).read()
+
     duration += @response[:content][:duration]
 
     @response[:content][:duration] = duration
@@ -407,6 +416,9 @@ class Import::AgencyController < ApplicationController
         obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
         cache_images obj, cache, 'rentals'
       }
+      logger.info 'Fetching url to refresh picture'
+      url = get_callback_url 'rentals'
+      r = open(url).read()
       begin
         indexer = CitiSoapLoader::Indexer.new
         indexer.create_index agency_id, 'rentals', 'index_props_rentals'
@@ -442,6 +454,10 @@ class Import::AgencyController < ApplicationController
     cache.store(lang + '_list', 'json', object_list[:object_courtage_simple])
     cache_images_for_list object_list[:object_courtage_simple], cache
 
+    logger.info 'Fetching url to refresh picture'
+    url = get_callback_url 'sales'
+    r = open(url).read()
+
     @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :objects => object_list}}
     respond_with @response
   end
@@ -469,8 +485,8 @@ class Import::AgencyController < ApplicationController
     agency_id = params[:agency_id]
     endpoint = params[:endpoint] || 'sales'
     callback_url_skel = "%s/api/update_cache.php?resource=%s"
-    params[:hl] = 'en_US'
     callback_request = callback_url_skel % ["#{request.protocol}#{request.host_with_port}", endpoint]
+    params[:hl] = 'en_US'
     lang = params[:hl]
     url = "#{request.protocol}#{request.host_with_port}"
     full_path = "#{request.fullpath}"
@@ -484,6 +500,12 @@ class Import::AgencyController < ApplicationController
                                                                              :domain => domain,
                                                                              :remote_addr => remote_addr,
                                                                              :callback_url => callback_request}}
-    respond_with @response
+    respond_with @response, :status => :ok
+  end
+
+  private
+  def get_callback_url(endpoint)
+    callback_url_skel = "%s/api/update_cache.php?resource=%s"
+    callback_url_skel % ["#{request.protocol}#{request.host_with_port}", endpoint]
   end
 end
