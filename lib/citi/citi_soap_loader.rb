@@ -310,7 +310,12 @@ module CitiSoapLoader
       end
     end
 
-    def translate_for_list(obj, index = nil, lang = nil)
+    #
+    # Translate informations provided by the webservice to return a list
+    # of object.
+    # it return an object formatted to be put in a list
+    #
+    def translate_for_list(obj, index = nil, lang = nil, use_cache = false)
       lang ||= 'fr'
       result = {}
       ###
@@ -339,7 +344,13 @@ module CitiSoapLoader
       result[:name] = obj['object_name']
       result[:nb_room] = obj['object_number_of_rooms']
       result[:nb_floor] = obj['object_number_of_rooms']
-      result[:main_picture] = '%s%s/cache/%s/sales/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+
+      # if system use cache to provide image information, then use local data, use remote otherwise
+      if use_cache
+        result[:main_picture] = '%s%s/cache/%s/sales/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      else
+        result[:main_picture] = obj['thumb_nail_url']
+      end
       result[:price] = obj['object_courtage_selling_price']
       result[:new] = obj['object_courtage_is_new']
       result[:reserved] = obj['object_courtage_reserved']
@@ -549,15 +560,18 @@ module CitiSoapLoader
       result
     end
 
-    def translate_for_details(obj, lang = nil)
+    def translate_for_details(obj, lang = nil, use_cache = false)
       lang ||= 'fr'
       result = {}
       result[:id] = obj['object_id']
       result[:name] = obj["object_name"]
       result[:nb_room] = obj["object_number_of_rooms"]
       result[:nb_floor] = obj["object_number_of_rooms"]
-      result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
-
+      if use_cache
+        result[:main_picture] = "%s%s/cache/%s/sales/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/'))]
+      else
+        result[:main_picture] = obj['thumb_nail_url']
+      end
 
       result[:sellable_cat] = 1 # TODO : Find out the correct value
 
@@ -565,6 +579,7 @@ module CitiSoapLoader
           lang => obj["object_courtage_promo"]
       }
 
+      # TODO : check if we have to do the same job as the previous one
       begin
         if obj["object_descriptions"]["object_description"].class == Array
           #descriptions = Array.new
@@ -588,7 +603,7 @@ module CitiSoapLoader
       end
 
       result[:properties] = list_properties obj
-      result[:attachments] = create_list_attachments obj
+      result[:attachments] = create_list_attachments obj, 'sales', use_cache
 
       result[:price] = obj["object_courtage_selling_price"]
       result[:new] = obj["object_courtage_is_new"]
@@ -832,7 +847,7 @@ module CitiSoapLoader
       visits
     end
 
-    def create_list_attachments(obj, endpoint = 'sales')
+    def create_list_attachments(obj, endpoint = 'sales', use_cache = false)
       virtual_visits = list_virtual_visits obj, endpoint
       plans = list_plans obj, endpoint
       images = list_image obj, endpoint
