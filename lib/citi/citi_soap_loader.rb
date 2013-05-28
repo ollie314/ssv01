@@ -59,7 +59,7 @@ module CitiSoapLoader
 
     #
     # The index is based on relevant properties to summarize in the object list.
-    # For now, those one are external link information (youtube video, rentalp 
+    # For now, those one are external link information (youtube video, rentalp
     # photo, ...
     #
     def get_props(obj, translator)
@@ -747,13 +747,13 @@ module CitiSoapLoader
       properties
     end
 
-    def list_image(obj, endpoint = 'sales')
+    def list_image(obj, endpoint = 'sales', use_cache = false)
       return [] unless !(obj['object_images'].nil? or obj['object_images']['object_image'].nil?)
       images = []
       exts = %w(.jpg .png .jpeg .gif)
       if obj['object_images']['object_image'].class == Array
         obj['object_images']['object_image'].each { |img|
-          _img = create_image_info_from_cache img, obj, endpoint
+          _img = use_cache ? create_image_info_from_cache(img, obj, endpoint) : create_image_info(img)
           if exts.include? _img[:ext] || img[:kind] == 1
             images.push _img
           end
@@ -850,7 +850,7 @@ module CitiSoapLoader
     def create_list_attachments(obj, endpoint = 'sales', use_cache = false)
       virtual_visits = list_virtual_visits obj, endpoint
       plans = list_plans obj, endpoint
-      images = list_image obj, endpoint
+      images = list_image obj, endpoint, use_cache
       videos = list_videos obj, endpoint
       docs = list_docs obj, endpoint
       attachments = {
