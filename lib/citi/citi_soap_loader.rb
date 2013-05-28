@@ -38,7 +38,7 @@ module CitiSoapLoader
       file_to_exclude = ['fr_list.json', 'en_list.json', index_pathname]
 
       files.each { |f|
-        next unless f.to_s != 'images'
+        next if f.to_s == 'images'
         next unless !f.directory? and !file_to_exclude.include? f.to_s and is_valid_file? f.to_s
         _fname = f.absolute? ? f.to_s : parent_path.to_s + File::SEPARATOR + f.to_s
         cur_obj = JSON.parse(IO.read(_fname))
@@ -56,6 +56,12 @@ module CitiSoapLoader
     end
 
     private
+
+    #
+    # The index is based on relevant properties to summarize in the object list.
+    # For now, those one are external link information (youtube video, rentalp 
+    # photo, ...
+    #
     def get_props(obj, translator)
       props = {}
       props['images'] = translator.list_image(obj).size
@@ -119,7 +125,11 @@ module CitiSoapLoader
     end
 
     def store_image_for_list(thumb)
+      # return if thumb is not a valid document.
       return if /.*?\.(jpg|png|jpeg||gif|pdf|doc|xls|docx|xslx)/i.match(thumb).nil?
+
+      # trying to store image in the cache ...
+      # TODO : add logging information right here ...
       begin
         path = Uploads::Fs.create_path_if_not_exists @rep.join('images', 'list')
         _th = Uploads::Helper::clean_url File.basename thumb
@@ -136,6 +146,10 @@ module CitiSoapLoader
       end
     end
 
+    #
+    # Drop the whole directory for a specific object. This directory
+    # may contains doc and images.
+    #
     def delete_image_cache_rep_for_item_id(item_id)
       begin
         path = @rep.join('images', item_id).to_s
@@ -147,26 +161,39 @@ module CitiSoapLoader
       end
     end
 
+    #
+    # Smae of previous but woking on an item instead of his id.
+    #
     def delete_image_cache_rep_for_item(item)
       return delete_image_cache_rep_for_item_id item[:object_id]
     end
 
     def cache_image_by_url(item, url, target = 'sales')
-      return unless !/.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
+      # be sure about the document format.
+      return if /.*?\.(jpg|png|jpeg|gif|pdf|doc|xls|docx|xslx)/i.match(url).nil?
       begin
         case target
-          when 'rentals'
+          when 'rentals' # TODO : change for constants (Target)
             id_key = 'id_object_location'
-          when 'sales'
+          when 'sales' # TODO : change for constants (Target)
             id_key = 'object_id'
         end
         path = Uploads::Fs.create_if_not_exists @rep.join('images'), item[id_key]
         _th = Uploads::Helper::clean_url File.basename url
+
+        # be sure the url cleaning process is OK.
+        return false if _th.nil?
+
+        # open uri and try to store uri data in a local file
         open(File.dirname(url) + '/' + _th) { |f|
+          # generate the local absolute path for the image to store
           image_name = path.to_s + File::SEPARATOR + File.basename(url)
+          raise Exception("Unable to create the image with the name %s" %(image_name)) if image_name.nil?
+          # write info into this image.
           File.open(image_name, 'wb') do |file|
             file.puts f.read
           end
+          # TODO : log success
         }
         true
       rescue Exception => e
