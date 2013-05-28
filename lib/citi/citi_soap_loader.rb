@@ -1109,7 +1109,8 @@ module CitiSoapLoader
       @agency_id = agency_id
       @default_lang = 'fr'
       @wsdl = WSDL_API_V1
-      @client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
+      #@client = Savon.client(logger: Rails.logger, log_level: :debug, wsdl: @wsdl)
+      @client = Savon.client(wsdl: @wsdl, log: false)
       @channel_id = 3
       @username = "CITI_COURTAGE_PERSO"
       @password = "LetMeIn_Now_Courtage_Perso"
