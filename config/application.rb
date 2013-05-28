@@ -64,6 +64,7 @@ module Ssv01
       allow do
         origins 'localhost',
                 '127.0.0.1',
+                'http://bessonimmobillier.ch',
                 /http:\/\/(www\.)?(\w+\.)+local/,
                 /http:\/\/(www\.)?(\w+\.)*bessonimmobilier\.ch/ #,
                 #/http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/
