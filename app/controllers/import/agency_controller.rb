@@ -135,7 +135,9 @@ class Import::AgencyController < ApplicationController
         cache.store(lang + '_' + object_detail[:object_courtage][:object_id], 'json', object_detail[:object_courtage])
         if redo_cache_image
           o = cache.load(lang + '_' + object_detail[:object_courtage][:object_id] + '.json')
-          cache.store_image_for_list o[:thumb_nail_url].nil? ? o['thumb_nail_url'] : o[:thumb_nail_url]
+          thumb_url = o[:thumb_nail_url].nil? ? o['thumb_nail_url'] : o[:thumb_nail_url]
+          logger.debug 'Caching image for list [%s]' % [thumb_url]
+          cache.store_image_for_list thumb_url
           cache_images o, cache
         end
       }
