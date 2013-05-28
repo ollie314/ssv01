@@ -1,11 +1,17 @@
 source 'https://rubygems.org'
 
+gem 'rake', '~> 10.0.4'
 gem 'rails', '3.2.10'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
 gem 'mysql2'
+gem 'eventmachine'
+gem 'couchrest'
+gem 'msgpack'
+gem 'resque'
+
 
 group :development do
   gem 'guard'
