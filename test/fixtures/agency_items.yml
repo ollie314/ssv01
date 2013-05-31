@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  standing_id: 1
+  agency_id: 1
+  item_id: 1
+
+two:
+  name: MyString
+  standing_id: 1
+  agency_id: 1
+  item_id: 1
