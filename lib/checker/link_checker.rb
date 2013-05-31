@@ -11,7 +11,7 @@ module Checker
     def get_code(url)
       uri = URI.parse(url)
       response = nil
-      Net::HTTP.start(uri.hostm uri.port) { |http|
+      Net::HTTP.start(uri.port) { |http|
         response = http.head(uri.path.size > 0 ? uri.path : '/')
       }
       response.code

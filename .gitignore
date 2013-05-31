@@ -14,8 +14,9 @@
 *.lock
 *.old
 *.back
+/app/assets/.sass-cache
 
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
-.idea
+.idea/
