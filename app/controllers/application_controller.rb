@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  rescue_from ActionController::RoutingError, :with => :not_found
   protect_from_forgery
 
   # private methods
@@ -29,5 +30,9 @@ class ApplicationController < ActionController::Base
         respond_with @response
       end
     end
+  end
+
+  def not_found
+    render :file => 'public/404_v2', :status => 404, :layout => false
   end
 end
