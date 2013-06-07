@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130124095345) do
+ActiveRecord::Schema.define(:version => 20130128165307) do
 
   create_table "addresses", :force => true do |t|
     t.string   "street_address1"
@@ -81,6 +81,16 @@ ActiveRecord::Schema.define(:version => 20130124095345) do
     t.integer  "district_id"
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
+  end
+
+  create_table "carts", :force => true do |t|
+    t.string   "name"
+    t.float    "amount"
+    t.boolean  "checked_out"
+    t.integer  "client_id"
+    t.datetime "checkout_date"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   create_table "cities", :force => true do |t|
