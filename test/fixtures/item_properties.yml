@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  agency_id: 1
+  item_property_kind_id: 1
+
+two:
+  name: MyString
+  agency_id: 1
+  item_property_kind_id: 1

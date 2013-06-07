@@ -10,6 +10,14 @@
 # Ignore the default SQLite database.
 /db/*.sqlite3
 
+# Ignore lock and backup files
+*.lock
+*.old
+*.back
+/app/assets/.sass-cache
+
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
+.idea/
+**Thumbs.db

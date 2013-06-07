@@ -49,6 +49,12 @@
             "type" : "float"
         },
         {
+            "key" : "new",
+            "value" : true,
+            "type" : "boolean"
+        },
+
+        {
             "key" : "loan",
             "value" : 5000.00,
             "type" : "float"
@@ -74,102 +80,110 @@
             "type" : "boolean"
         }
     ],
-    "attachments" : [
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
-            "kind" : 1,
-            "title" : {
-                "en" : "First room",
-                "fr" : "Premiere chambre"
+    "attachments" : {
+            "summary" : {
+                "pictures" : 5,
+                "plans" : 1,
+                "video" : 1,
+                "document" : 1
+                },
+            "content" :[
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_1.jpg",
+                "kind" : 1,
+                "title" : {
+                    "en" : "First room",
+                    "fr" : "Premiere chambre"
+                },
+                "caption" : {
+                    "en" : "The first awesome room",
+                    "fr" : "Son incroyable premiere chambre"
+                }
             },
-            "caption" : {
-                "en" : "The first awesome room",
-                "fr" : "Son incroyable premiere chambre"
-            }
-        },
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_2.jpg",
-            "kind" : 1,
-            "title" : {
-                "en" : "Second room",
-                "fr" : "Seconds chambre"
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_2.jpg",
+                "kind" : 1,
+                "title" : {
+                    "en" : "Second room",
+                    "fr" : "Seconds chambre"
+                },
+                "caption" : {
+                    "en" : "The second room",
+                    "fr" : "La seconde chambre"
+                }
             },
-            "caption" : {
-                "en" : "The second room",
-                "fr" : "La seconde chambre"
-            }
-        },
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_3.jpg",
-            "kind" : 1,
-            "title" : {
-                "en" : "Third room",
-                "fr" : "Troisieme chambre"
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_3.jpg",
+                "kind" : 1,
+                "title" : {
+                    "en" : "Third room",
+                    "fr" : "Troisieme chambre"
+                },
+                "caption" : {
+                    "en" : "The third room",
+                    "fr" : "La troisieme chambre"
+                }
             },
-            "caption" : {
-                "en" : "The third room",
-                "fr" : "La troisieme chambre"
-            }
-        },
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_4.jpg",
-            "kind" : 1,
-            "title" : {
-                "en" : "Fourth room",
-                "fr" : "Quatrieme chambre"
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_4.jpg",
+                "kind" : 1,
+                "title" : {
+                    "en" : "Fourth room",
+                    "fr" : "Quatrieme chambre"
+                },
+                "caption" : {
+                    "en" : "The fourth awesome room",
+                    "fr" : "Son incroyable quatrieme chambre"
+                }
             },
-            "caption" : {
-                "en" : "The fourth awesome room",
-                "fr" : "Son incroyable quatrieme chambre"
-            }
-        },
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_5.jpg",
-            "kind" : 1,
-            "title" : {
-                "en" : "Fifth room",
-                "fr" : "Cinquieme chambre"
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/room_5.jpg",
+                "kind" : 1,
+                "title" : {
+                    "en" : "Fifth room",
+                    "fr" : "Cinquieme chambre"
+                },
+                "caption" : {
+                    "en" : "The fifth awesome room",
+                    "fr" : "Son incroyable cinquieme chambre"
+                }
             },
-            "caption" : {
-                "en" : "The fifth awesome room",
-                "fr" : "Son incroyable cinquieme chambre"
-            }
-        },
-        {
-            "url" : "http://www.youtube.com/embed/ujDlfOBKwRo?autoplay=1",
-            "kind" : 3,
-            "title" : {
-                "en" : "First video",
-                "fr" : "Premiere video"
+            {
+                "url" : "http://www.youtube.com/embed/ujDlfOBKwRo?autoplay=1",
+                "kind" : 3,
+                "title" : {
+                    "en" : "First video",
+                    "fr" : "Premiere video"
+                },
+                "caption" : {
+                    "en" : "The first video",
+                    "fr" : "La premiere video"
+                }
             },
-            "caption" : {
-                "en" : "The first video",
-                "fr" : "La premiere video"
-            }
-        },
-        {
-            "url" : "http://totheweb.com/eichler/images/subpage_photos/floor-plan-1224.gif",
-            "kind" : 2,
-            "title" : {
-                "en" : "First floor",
-                "fr" : "Premier etage"
+            {
+                "url" : "http://totheweb.com/eichler/images/subpage_photos/floor-plan-1224.gif",
+                "kind" : 2,
+                "title" : {
+                    "en" : "First floor",
+                    "fr" : "Premier etage"
+                },
+                "caption" : {
+                    "en" : "The plan of the first floor",
+                    "fr" : "Le plan du premier etage"
+                }
             },
-            "caption" : {
-                "en" : "The plan of the first floor",
-                "fr" : "Le plan du premier etage"
+            {
+                "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/fake_doc.pdf",
+                "kind" : 4,
+                "title" : {
+                    "en" : "A fake document",
+                    "fr" : "Un faux document"
+                },
+                "caption" : {
+                    "en" : "Content of the fake document",
+                    "fr" : "Contenu du faux document"
+                }
             }
-        },
-        {
-            "url" : "http://toopixel.ch/clients/sites/besson/assets/apartments/fake_doc.pdf",
-            "kind" : 4,
-            "title" : {
-                "en" : "A fake document",
-                "fr" : "Un faux document"
-            },
-            "caption" : {
-                "en" : "Content of the fake document",
-                "fr" : "Contenu du faux document"
-            }
-        }
-    ]
+        ]
+    }
 }

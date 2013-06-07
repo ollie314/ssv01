@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  internal_name: MyString
+  standing_id: 1
+
+two:
+  internal_name: MyString
+  standing_id: 1

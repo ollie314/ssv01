@@ -1,6 +1,10 @@
 Ssv01::Application.routes.draw do
 
-  root :to => 'maintenance#index'
+  root :to => 'pub/index#index'
+
+  #get "agency/load"
+
+  #get "agency/check"
 
   # check following notation to achieve same result
   #resources :publishers do
@@ -36,12 +40,27 @@ Ssv01::Application.routes.draw do
   end
 
   namespace :hub do
-    get "/:agency_id/sales/index"
-    get "/:agency_id/sales/create"
-    get "/:agency_id/sales/edit"
-    get "/:agency_id/sales/delete"
-    get "/:agency_id/sales/save"
-    get "/:agency_id/sales/trends"
+    match "/:agency_id/sales" => "sales#index", :via => :get
+    match "/:agency_id/sales/index" => "sales#index", :via => :get
+    match "/:agency_id/sales/create" => "sales#create", :via => :get
+    match "/:agency_id/sales/edit" => "sales#edit", :via => :get
+    match "/:agency_id/sales/delete" => "sales#delete", :via => :get
+    match "/:agency_id/sales/save" => "sales#save", :via => :post
+    match "/:agency_id/sales/trends" => "sales#trends", :via => :get
+    match "/:agency_id/sales/objects/" => "object#index", :via => :get
+
+    match "/:agency_id/sales/test" => "sales#test", :via => :get
+  end
+
+  namespace :import do
+    match '/load_agency_info/:agency_id' => "agency#load_agency_info", :via => [:get, :post]
+    match "/fill_agency_info/:agency_id" => "agency#fill_agency_info", :via => :get
+    match "/check/:agency_id/:object_id" => "agency#check", :via => :get
+    match "/load_rentals_list/:agency_id" => "agency#load_rentals_list", :via => :get
+    match "/load_rentals_details/:agency_id" => "agency#load_rentals_details", :via => :get
+    match "/:agency_id/test" => "agency#test", :via => :get
+    match "/:agency_id/:endpoint/:channel_id/reindex_item/:item_id" => "agency#reindex_item", :via => :get
+    match "/:agency_id/:endpoint/rebuild_index" => "agency#rebuild_index", :via => :get
   end
 
   # routes for administration namespace
@@ -82,6 +101,32 @@ Ssv01::Application.routes.draw do
     get "/documentation/list"
     get "/documentation/resources"
     get "/documentation/streams"
+
+    match ":agency_id/sales/" => "sales#list", :via => :get
+    match ":agency_id/sales/list" => "sales#list", :via => :get
+    match ":agency_id/sales/search" => "sales#search", :via => :get
+
+    match ":agency_id/sales/:object_id" => "sales#index", :via => :get
+    match ":agency_id/sales/:object_id/summary" => "sales#summary", :via => :get
+    match ":agency_id/sales/:object_id/details" => "sales#details", :via => :get
+    match ":agency_id/sales/:object_id/location" => "sales#location", :via => :get
+    match ":agency_id/sales/:object_id/pictures" => "sales#pictures", :via => :get
+    match ":agency_id/sales/:object_id/videos" => "sales#videos", :via => :get
+
+    match ":agency_id/rentals/" => "rentals#list", :via => :get
+    match ":agency_id/rentals/list" => "rentals#list", :via => :get
+    match ":agency_id/rentals/search" => "rentals#search", :via => :get
+
+    match ":agency_id/rentals/:object_id" => "rentals#details", :via => :get
+    match ":agency_id/rentals/:object_id/summary" => "rentals#summary", :via => :get
+    match ":agency_id/rentals/:object_id/details" => "rentals#details", :via => :get
+    match ":agency_id/rentals/:object_id/location" => "rentals#location", :via => :get
+    match ":agency_id/rentals/:object_id/pictures" => "rentals#pictures", :via => :get
+    match ":agency_id/rentals/:object_id/videos" => "rentals#videos", :via => :get
+    match ":agency_id/rentals/:object_id/pricing" => "rentals#pricing", :via => :get
+    match ":agency_id/rentals/:object_id/availability" => "rentals#availability", :via => :get
+
+
   end
 
   # routes for account
@@ -124,6 +169,10 @@ Ssv01::Application.routes.draw do
     get "/documents/term_of_use"
     get "/documents/tou"
   end
+
+  #namespace :statics do
+  #  match "/:agency_id/sales/:object_id/:filename.:file_ext" => "images#sales", :via => :get
+  #end
 
   get "account/list"
   get "account/summary"
@@ -227,4 +276,5 @@ Ssv01::Application.routes.draw do
   # This is a legacy wild controller route that's not recommended for RESTful applications.
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
+  match '*url' => 'error#page_not_found'
 end

@@ -1,11 +1,17 @@
 source 'https://rubygems.org'
 
+gem 'rake', '~> 10.0.4'
 gem 'rails', '3.2.10'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
 gem 'mysql2'
+gem 'eventmachine'
+gem 'couchrest'
+gem 'msgpack'
+gem 'resque'
+
 
 group :development do
   gem 'guard'
@@ -16,8 +22,8 @@ group :development do
   gem 'rb-inotify', :require => false
   gem 'rb-fsevent', :require => false
   gem 'rb-fchange', :require => false
-  gem 'wdm', :platforms => [:mswin, :mingw], :require => false
-  gem 'win32console'
+#  gem 'wdm', :platforms => [:mswin, :mingw], :require => false
+#  gem 'win32console'
 
 end
 
@@ -34,6 +40,15 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 
   gem 'timelineJS-rails'
+
+  gem 'rack-cors', :require => 'rack/cors' # install : gem install rack-cors
+  gem 'geoutm' # install gem install geoutm
+  gem 'savon'
+
+  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
+  gem 'therubyracer', :platforms => :ruby, :require => 'v8'
+
+  gem 'uglifier', '>= 1.0.3'
 end
 
 gem 'jquery-rails'

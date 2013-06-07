@@ -58,5 +58,34 @@ module Ssv01
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # CORS policz definition
+    config.middleware.use Rack::Cors do
+      allow do
+        origins 'localhost',
+                '127.0.0.1',
+                'http://bessonimmobillier.ch',
+                /http:\/\/(www\.)?(\w+\.)+local/,
+                /http:\/\/(www\.)?(\w+\.)*bessonimmobilier\.ch/ #,
+                #/http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/
+        # regular expressions can be used here
+
+        #resource '/file/list_all/', :headers => 'x-domain-token'
+        resource '/api/*',
+                 :methods => [:get, :post, :put, :delete, :options],
+                 :headers => 'x-domain-token',
+                 :expose => %w('x-gotham-restriction')
+
+        resource '/testing/*',
+                 :methods => :get,
+                 :headers => :any
+        # headers to expose
+      end
+
+      allow do
+        origins '*'
+        resource '/public/*', :headers => :any, :methods => :get
+      end
+    end
   end
 end
