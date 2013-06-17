@@ -21,3 +21,7 @@
 /tmp
 .idea/
 **Thumbs.db
+
+/log
+/public/cache
+/public/uploads
