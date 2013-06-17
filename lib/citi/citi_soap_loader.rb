@@ -772,7 +772,8 @@ module CitiSoapLoader
 
       if obj['object_images']['object_image'].class == Array
         obj['object_images']['object_image'].each { |item|
-          _img = create_image_info_from_cache item, obj, endpoint
+          #_img = create_image_info_from_cache item, obj, endpoint
+          _img = create_image_info item
           if exts.include? _img[:ext]
             _img[:kind] = 2
             plans.push _img
