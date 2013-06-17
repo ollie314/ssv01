@@ -753,13 +753,15 @@ module CitiSoapLoader
       exts = %w(.jpg .png .jpeg .gif)
       if obj['object_images']['object_image'].class == Array
         obj['object_images']['object_image'].each { |img|
-          _img = use_cache ? create_image_info_from_cache(img, obj, endpoint) : create_image_info(img)
+          #_img = use_cache ? create_image_info_from_cache(img, obj, endpoint) : create_image_info(img)
+          _img = create_image_info(img)
           if exts.include? _img[:ext] || img[:kind] == 1
             images.push _img
           end
         }
       else
-        _img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
+        #_img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
+        _img = create_image_info obj['object_images']['object_image']
         images.push _img unless !exts.include? _img[:ext] || img[:kind] != 1
       end
       images
@@ -794,11 +796,13 @@ module CitiSoapLoader
       plans = []
       if obj['object_images']['object_image'].class == Array
         obj['object_images']['object_image'].each { |item|
-          _img = create_image_info_from_cache item, obj, endpoint
+          #_img = create_image_info_from_cache item, obj, endpoint
+          _img = create_image_info item
           plans.push _img if _img[:kind] == 1 #or _img[:ext].sub(/\./,"") == "pdf"
         }
       else
-        _img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
+        #_img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
+        _img = create_image_info obj['object_images']['object_image']
         if _img[:kind] == 1
           plans.push _img
         end
