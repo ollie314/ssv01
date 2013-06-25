@@ -59,7 +59,7 @@ module Ssv01
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
 
-    # CORS policz definition
+    # CORS policy definition
     config.middleware.use Rack::Cors do
       allow do
         origins 'localhost',

@@ -385,7 +385,7 @@ module CitiSoapLoader
       result[:name] = obj['object_name']
       result[:floor_size] = obj['floor_size']
       result[:number_of_rooms] = obj['number_of_rooms']
-      result[:main_picture] = '%s%s/cache/%s/rentals/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      result[:main_picture] = obj['thumb_nail_url']
       #result[:main_picture] = "%s%s/cache/%s/rentals/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/')).gsub(/70/, '230').gsub(/640/,'300')]
       result[:kind] = obj['id_object_type']
       result[:kind_description] = get_kind obj['object_type_name']
@@ -755,9 +755,7 @@ module CitiSoapLoader
         obj['object_images']['object_image'].each { |img|
           #_img = use_cache ? create_image_info_from_cache(img, obj, endpoint) : create_image_info(img)
           _img = create_image_info(img)
-          if exts.include? _img[:ext] || img[:kind] == 1
-            images.push _img
-          end
+          images.push _img if exts.include? _img[:ext] || img[:kind] == 1
         }
       else
         #_img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
@@ -839,15 +837,11 @@ module CitiSoapLoader
         obj['object_images']['object_image'].each { |item|
           next if item['url_small'].nil? or is_picture?(item['url_small']) or check_for_video(item) or check_for_pdf item
           visit = create_visit_object item
-          if visit[:kind] == 4
-            visits.push visit
-          end
+          visits.push visit if visit[:kind] == 4
         }
       else
         visit = create_visit_object obj['object_images']['object_image']
-        if visit[:kind] == 4
-          visits.push visit
-        end
+        visits.push visit if visit[:kind] == 4
       end
       visits
     end
