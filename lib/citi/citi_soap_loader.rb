@@ -755,12 +755,12 @@ module CitiSoapLoader
         obj['object_images']['object_image'].each { |img|
           #_img = use_cache ? create_image_info_from_cache(img, obj, endpoint) : create_image_info(img)
           _img = create_image_info(img)
-          images.push _img if exts.include? _img[:ext] || img[:kind] == 1
+          images.push _img if exts.include? _img[:ext].downcase || img[:kind] == 1
         }
       else
         #_img = create_image_info_from_cache obj['object_images']['object_image'], obj, endpoint
         _img = create_image_info obj['object_images']['object_image']
-        images.push _img unless !exts.include? _img[:ext] || img[:kind] != 1
+        images.push _img unless !exts.include? _img[:ext].downcase || img[:kind] != 1
       end
       images
     end
@@ -822,9 +822,12 @@ module CitiSoapLoader
           end
         }
       else
-        video = create_video_object obj['object_images']['object_image']
-        if video[:kind] == 3
-          videos.push video
+        item = obj['object_images']['object_image']
+        if has_video? item
+          video = create_video_object item
+          if video[:kind] == 3
+            videos.push video
+          end
         end
       end
       videos
@@ -835,13 +838,18 @@ module CitiSoapLoader
       visits = []
       if obj['object_images']['object_image'].class == Array
         obj['object_images']['object_image'].each { |item|
-          next if item['url_small'].nil? or is_picture?(item['url_small']) or check_for_video(item) or check_for_pdf item
+          next if item['url_small'].nil? or is_picture?(item['url_small']) or is_video(item) or is_pdf? item
           visit = create_visit_object item
           visits.push visit if visit[:kind] == 4
         }
       else
-        visit = create_visit_object obj['object_images']['object_image']
-        visits.push visit if visit[:kind] == 4
+        item = obj['object_images']['object_image']
+        if item['url_small'].nil? or is_picture?(item['url_small']) or is_video(item) or is_pdf? item
+          visits = []
+        else
+          visit = create_visit_object item
+          visits.push visit if visit[:kind] == 4
+        end
       end
       visits
     end
@@ -865,16 +873,14 @@ module CitiSoapLoader
     end
 
     private
-    def check_for_video(item)
+    def is_video(item)
       return false if item['url_small'].nil?
       url = item['url_small']
-      video_url = 'http://www.youtube.com/embed/'
-      m = /^(http:\/\/).+\.(jpg|jpeg|png|gif)$/.match url
-      return false if m.nil? or m.size > 0
-      url.include? video_url
+      video_url_rx = /^(?:http:\/\/)?(?:w{3}\.)?youtube/.match url
+      video_url_rx.nil? or video_url_rx.size > 0
     end
 
-    def check_for_pdf item
+    def is_pdf item
       return false if item['url_large'].nil?
       m = item['url_large'].match(/\,pdf/)
       m.nil? or m.size > 0
@@ -899,11 +905,7 @@ module CitiSoapLoader
 
     def has_video?(item)
       return false if item['url_small'].nil?
-      url = item['url_small']
-      video_url = 'http://www.youtube.com/embed/'
-      m = /^(http:\/\/).+\.(jpg|jpeg|png|gif)$/.match url
-      return false if m.nil? or m.size > 0
-      url.include? video_url
+      is_video item
     end
 
     def create_video_object(item)
