@@ -390,7 +390,7 @@ module CitiSoapLoader
       result[:kind] = obj['id_object_type']
       result[:kind_description] = get_kind obj['object_type_name']
       result[:external_info] = 'http://vittel.rentalp.ch/rentalp.aspx?ID_Object=%s&ObjectName=&ID_Agency=%s&lng=%s&callbackUrl=%s&backgroundUrl=%s' % [
-          obj['object_remote_id'],
+          obj['id_object_location'],
           obj['agency_info']['id_agency'],
           lang,
           @request.referer.nil? ? obj['agency_info']['website'] : @request.referer,
