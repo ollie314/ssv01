@@ -390,7 +390,7 @@ module CitiSoapLoader
       #result[:main_picture] = "%s%s/cache/%s/rentals/images/list/%s" % [@request.protocol, @request.host_with_port, obj["agency_info"]["id_agency"], File.basename(obj["thumb_nail_url"].gsub(/\\+/, '/')).gsub(/70/, '230').gsub(/640/,'300')]
       result[:kind] = obj['id_object_type']
       result[:kind_description] = get_kind obj['object_type_name']
-      result[:external_info] = 'http://vittel.rentalp.ch/rentalp.aspx?ID_Object=%s&ObjectName=&ID_Agency=%s&lng=%s&callbackUrl=%s&backgroundUrl=%s' % [
+      result[:external_info] = 'http://vittel.rentalp.ch/rentalp.aspx?ID_Object=%s&ObjectName=&ID_Agency=%s&lng=%s&callbackUrl=%s&backgroundUrl=%s&IsDateFiltered=No' % [
           obj['object_remote_id'],
           obj['agency_info']['id_agency'],
           lang,
