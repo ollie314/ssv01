@@ -159,6 +159,9 @@ class Import::AgencyController < ApplicationController
     @response
   end
 
+  #
+  # Caching all information about sales items
+  #
   def fill_agency_info
     start = Time.new
     lang_to_fill = %w(fr en)
@@ -188,6 +191,9 @@ class Import::AgencyController < ApplicationController
     respond_with @response
   end
 
+  #
+  # Caching all information about sales items
+  #
   def load_sales_details
     channel_id = 3
     username = 'CITI_COURTAGE_PERSO'
@@ -479,9 +485,13 @@ class Import::AgencyController < ApplicationController
     cache.store(lang + '_list', 'json', object_list[:object_courtage_simple])
     cache_images_for_list object_list[:object_courtage_simple], cache
 
-    logger.info 'Fetching url to refresh picture'
     url = get_callback_url 'sales'
-    r = open(url).read()
+    begin
+      logger.info 'Fetching url [%s] to refresh picture' % [url]
+      r = open(url).read()
+    rescue Exception => e
+      logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
+    end
 
     @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :objects => object_list}}
     respond_with @response
@@ -530,7 +540,13 @@ class Import::AgencyController < ApplicationController
 
   private
   def get_callback_url(endpoint)
-    callback_url_skel = "%s/api/update_cache.php?resource=%s"
-    callback_url_skel % ["http://tpx.bessonimmobilier.ch", endpoint]
+    callback_url = ''
+    if params[:callback_url].nil?
+      callback_url_skel = "%s/api/update_cache.php?resource=%s"
+      callback_url = callback_url_skel % ["http://bessonimmobilier.ch", endpoint]
+    else
+      callback_url = params[:callback_url]
+    end
+    callback_url
   end
 end
