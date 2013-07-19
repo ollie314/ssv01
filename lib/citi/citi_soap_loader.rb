@@ -876,8 +876,9 @@ module CitiSoapLoader
     def is_video(item)
       return false if item['url_small'].nil?
       url = item['url_small']
-      video_url_rx = /^(?:http:\/\/)?(?:w{3}\.)?youtube/.match url
-      video_url_rx.nil? or video_url_rx.size > 0
+      video_url_rx = /^.*youtube.*/.match url
+      return false if video_url_rx.nil?
+      video_url_rx.size > 0
     end
 
     def is_pdf item
