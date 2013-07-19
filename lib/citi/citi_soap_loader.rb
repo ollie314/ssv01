@@ -371,7 +371,8 @@ module CitiSoapLoader
       result[:number_of_rooms] = obj['number_of_rooms']
       result[:number_of_bedrooms] = obj['number_of_bedrooms']
       result[:number_of_bathrooms] = obj['number_of_bathrooms']
-      result[:main_picture] = '%s%s/cache/%s/rentals/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
+      result[:main_picture] = obj['thumb_nail_url']
+      #result[:main_picture] = '%s%s/cache/%s/rentals/images/list/%s' % [@request.protocol, @request.host_with_port, obj['agency_info']['id_agency'], File.basename(obj['thumb_nail_url'].gsub(/\\+/, '/'))]
       result[:kind] = obj['id_object_type']
       result[:kind_description] = get_kind obj['object_type_name']
       result[:attachments] = index[obj['id_object_location']] unless index.nil?
