@@ -488,6 +488,13 @@ module CitiSoapLoader
           outdoor_park = FALSE
       end
 
+      parking = {
+          :key => 'parking',
+          :value => (indoor_park or shared_park or outdoor_park),
+          :type => 'boolean'
+      }
+      result[:properties].push(parking)
+
       # Add balcony
       balcony = {
           :key => 'balcony',
@@ -497,12 +504,13 @@ module CitiSoapLoader
       result[:properties].push(balcony)
 
       # Add terrace
-      balcony = {
+      terrace = {
           :key => 'terrace',
-          :value => (!obj['extended_availability_terrace_enum'].nil? and obj['extended_availability_terrace_enum']['id_enum'] != 0),
+          :value => !(obj['extended_availability_terrace_enum'].nil? and obj['extended_availability_terrace_enum']['id_enum'] == 0),
           :type => 'boolean'
       }
-      result[:properties].push(balcony)
+      terrace[:value] = (obj['extended_availability_terrace_enum'].nil? and obj['extended_availability_terrace_enum']['id_enum'] == 0)
+      result[:properties].push(terrace)
 
       # Add Internet connection indication
       internet = {
