@@ -294,7 +294,9 @@ class Import::AgencyController < ApplicationController
     @rentals_season_loader.password = password
 
     logger.debug 'Season list loading process done.'
-    @rentals_season_loader.load_list
+    response = @rentals_season_loader.load_list
+    connection.disconnect session_id
+    response
   end
 
   def fetch_rentals_objects(agency_id)
@@ -307,13 +309,15 @@ class Import::AgencyController < ApplicationController
     session_id = connection.connect channel_id, username, password
 
     logger.debug 'Trying to load data from the service'
-    @rentals_common_loder = CitiSoapLoader::Rentals.new session_id, agency_id
-    @rentals_common_loder.channel_id = channel_id
-    @rentals_common_loder.username = username
-    @rentals_common_loder.password = password
+    @rentals_common_loader = CitiSoapLoader::Rentals.new session_id, agency_id
+    @rentals_common_loader.channel_id = channel_id
+    @rentals_common_loader.username = username
+    @rentals_common_loader.password = password
 
     logger.debug 'Common list loading process done.'
-    @rentals_common_loder.load_list
+    response = @rentals_common_loader.load_list
+    connection.disconnect session_id
+    response
   end
 
   def do_load_rentals_list
@@ -329,15 +333,26 @@ class Import::AgencyController < ApplicationController
     # load season rentals
     season_list = fetch_season_objects agency_id
 
-=begin
-    if season_list.class == Hash
-      object_list.merge season_list
-    else
-      if season_list.class == Array
-        object_list.concat season_list
-      end
-    end
-=end
+    channel_id = 1015
+    username = 'CITI_VITTEL'
+    password = 'Vittel_1_rx'
+
+    logger.debug 'Trying to connect to the service to cache price for rental objects'
+    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
+    session_id = connection.connect channel_id, username, password
+
+    # cache pricing list
+    price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
+    price_worker.init session_id
+
+
+    #if season_list.class == Hash
+    #  object_list.merge season_list
+    #else
+    #  if season_list.class == Array
+    #    object_list.concat season_list
+    #  end
+    #end
 
     cache.store(lang + '_list', 'json', object_list)
     cache_images_for_list object_list, cache
@@ -347,8 +362,9 @@ class Import::AgencyController < ApplicationController
     else
       if rebuild_cache
         object_list.each { |item|
-          object_detail = @rentals_common_loder.load_details item[:id_object_location], lang
+          object_detail = @rentals_common_loader.load_details item[:id_object_location], lang
           cache.store(lang + '_' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
+          price_worker.load_and_cache item
           obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
           cache.store_image_for_list obj[:thumb_nail_url].nil? ? obj['thumb_nail_url'] : obj[:thumb_nail_url]
           cache_images obj, cache, 'rentals'
@@ -380,7 +396,7 @@ class Import::AgencyController < ApplicationController
     stop = Time.new
     duration = (stop - start) * 1000
     @response[:content][:duration] = duration
-
+    connection.disconnect session_id unless session_id.nil? or connection.nil?
     @response
   end
 
@@ -425,6 +441,8 @@ class Import::AgencyController < ApplicationController
     session_id = connection.connect(channel_id, username, password)
     agency_id = params[:agency_id]
     cache = CitiSoapLoader::Cache.new agency_id, 'rentals'
+    price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
+    price_worker.init session_id
 
     loader = CitiSoapLoader::Rentals.new session_id, agency_id
     loader.channel_id = channel_id
@@ -440,6 +458,7 @@ class Import::AgencyController < ApplicationController
         cache.store(lang + '_' + object_detail[:object_location][:id_object_location], 'json', object_detail[:object_location])
         obj = cache.load(lang + '_' + object_detail[:object_location][:id_object_location] + '.json')
         cache_images obj, cache, 'rentals'
+        price_worker.load_and_cache item
       }
 
       url = get_callback_url 'rentals'

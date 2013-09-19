@@ -1,12 +1,15 @@
 require 'savon/client'
 require 'uploads/fs'
 require 'open-uri'
+require 'date'
+require_relative './filter'
 
 module CitiSoapLoader
 
   class Target
     SALES = 'sales'
     RENTALS = 'rentals'
+    PRICES = 'prices'
     ORPHANS = 'orphans'
   end
 
@@ -1331,5 +1334,99 @@ module CitiSoapLoader
       lang
     end
 
+  end
+
+  class PriceList
+
+    WSDL_LINK = 'http://wspublicationv2.rentalp.ch/CITI_WS_OBJECTLOCATION_OCCUPATION.asmx?WSDL'
+
+    attr_accessor :session_id
+
+    def initialize(session_id)
+      @session_id = session_id
+      @wsdl_link = WSDL_LINK
+      @client = Savon.client wsdl: @wsdl_link, log: false
+    end
+
+    def fetch_list_for_date_range(object_id, start_date, end_date, include = true)
+      soap_message = {
+          'sessionKey' => @session_id,
+          'objectLocationId' => object_id,
+          'searchStartDate' => start_date,
+          'searchEndDate' => end_date
+      }
+
+      response = @client.call :get_object_location_occupation, message: soap_message
+      response.to_hash[:get_object_location_occupation_response][:get_object_location_occupation_result]
+    end
+  end
+
+  class PriceListWorker
+    LOADING = 1
+    READING = 0
+
+    attr_accessor :date_range
+
+    def initialize(agency_id, behavior)
+      @cache = Cache.new agency_id, Target::PRICES
+      @behavior = behavior
+      @loader = nil
+      @date_range = {:start_date => nil, :end_date => nil}
+      @filter = nil
+    end
+
+    def init_filter(accepted_start_date, accepted_end_date)
+      get_filter accepted_start_date, accepted_end_date
+      self
+    end
+
+    def accept(item)
+      prices = get_price_for_item item
+      @filter.accept prices
+    end
+
+    def init(session_id, date_range = nil)
+      return if @behavior.nil? or @behavior != LOADING
+      @loader = PriceList.new session_id
+      date_range.nil? ? generate_default_range : set_date_range(date_range[:start_date], date_range[:end_date])
+      self
+    end
+
+    def load_and_cache(item)
+      item_id = item[:id_object_location]
+      response = @loader.fetch_list_for_date_range item_id, @date_range[:start_date], @date_range[:end_date]
+      filename = get_item_cache_filename item_id, false
+      @cache.store filename, 'json', response
+      self
+    end
+
+    def set_date_range(start_date, end_date)
+      @date_range[:start_date] = start_date
+      @date_range[:end_date] = end_date
+    end
+
+    private
+    def generate_default_range
+      today = Date.today
+      @date_range = {
+          :start_date => Date.new(today.year - 1, 1, 1),
+          :end_date => Date.new(today.year + 1, 1, 31)
+      }
+    end
+
+    def get_item_cache_filename(item_id, with_ext = true)
+      with_ext ? '%s.json' % (item_id) : '%s' % (item_id)
+    end
+
+    def get_price_for_item(item)
+      @cache.load get_item_cache_filename(item['id_object_location'])
+    end
+
+    def get_filter(start_date, end_date)
+      if @filter.nil?
+        @filter = Filter.new start_date, end_date
+      end
+      @filter
+    end
   end
 end
