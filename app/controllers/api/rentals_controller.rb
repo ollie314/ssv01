@@ -73,7 +73,7 @@ class Api::RentalsController < ApplicationController
       @objects.each { |obj|
         next if (price_sensitivity and !(obj["price"] >= min_price and obj["price"] <= max_price))
         next if (nb_rooms_sensitivity and !(obj["nb_rooms"] >= nb_rooms_min and obj["nb_rooms"] <= nb_rooms_max))
-        next if (price_worker.nil? or !price_worker.accept obj)
+        next if (date_sensitivity and !price_worker.nil? and !price_worker.accept obj)
         @results.push translator.translate_for_list_rentals obj, index || nil, lang
         cpt += 1
       }
