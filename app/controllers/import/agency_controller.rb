@@ -236,56 +236,13 @@ class Import::AgencyController < ApplicationController
     respond_with @response
   end
 
-  def select_image_name(img)
-    names = %w(url_large url_medium url_small unc_path_source)
-    img_name = nil
-    names.each{|name|
-      next if name.nil?
-      img_name = img[name]
-      break
-    }
-    img_name
-  end
-
-  def cache_images(item, cache, target = 'sales')
-    return if item.nil? || item['object_images'].nil? || item['object_images']['object_image'].nil?
-    base_url = 'http://www.RentAlp.ch/ObjectImages/'
-    images = item['object_images']['object_image']
-    images = [images] if images.class != Array
-    images.each { |img|
-      img_name = select_image_name img
-      next if img_name.nil?
-      match = /http:\/\/\w+/i.match(img_name)
-      if match and match.size > 0
-        clean_url = File.dirname(img_name) + '/' +  Uploads::Helper::clean_url(File.basename(img_name))
-        cache.cache_image_from_url item, clean_url, File.basename(img_name), target
-      else
-        image_url = base_url + img[img_name].gsub('\\', '/')
-        cache.cache_image_by_url item, image_url, target
-      end
-
-    }
-  end
-
-  def cache_images_for_list(item_list, cache)
-    0 unless !item_list.nil? or (item_list.class == Array and item_list.size > 0)
-    cpt = 0
-    item_list.each { |item|
-      thumb = item[:thumb_nail_url].nil? ? item['thumb_nail_url'] : item[:thumb_nail_url]
-      next unless !thumb.nil? and cache.store_image_for_list thumb
-      cpt += 1
-    }
-    cpt
-  end
-
   def fetch_season_objects(agency_id)
     channel_id = 3031
     username = 'CITI_BESSON_SAISON'
     password = 'Besson_Saison_1_rx'
 
     logger.debug 'Trying to connect to the service to fetch rentals objects for season'
-    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
-    session_id = connection.connect channel_id, username, password
+    session_id = do_connect channel_id, username, password, 2
 
     logger.debug 'Trying to load data from the service'
     @rentals_season_loader = CitiSoapLoader::Season.new session_id, agency_id
@@ -295,7 +252,7 @@ class Import::AgencyController < ApplicationController
 
     logger.debug 'Season list loading process done.'
     response = @rentals_season_loader.load_list
-    connection.disconnect session_id
+    do_disconnect session_id
     response
   end
 
@@ -305,8 +262,7 @@ class Import::AgencyController < ApplicationController
     password = 'Vittel_1_rx'
 
     logger.debug 'Trying to connect to the service to fetch common rentals objects'
-    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
-    session_id = connection.connect channel_id, username, password
+    session_id = do_connect channel_id, username, password, 2
 
     logger.debug 'Trying to load data from the service'
     @rentals_common_loader = CitiSoapLoader::Rentals.new session_id, agency_id
@@ -316,7 +272,7 @@ class Import::AgencyController < ApplicationController
 
     logger.debug 'Common list loading process done.'
     response = @rentals_common_loader.load_list
-    connection.disconnect session_id
+    do_disconnect session_id
     response
   end
 
@@ -332,19 +288,6 @@ class Import::AgencyController < ApplicationController
     object_list = fetch_rentals_objects agency_id
     # load season rentals
     season_list = fetch_season_objects agency_id
-
-    channel_id = 1015
-    username = 'CITI_VITTEL'
-    password = 'Vittel_1_rx'
-
-    logger.debug 'Trying to connect to the service to cache price for rental objects'
-    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
-    session_id = connection.connect channel_id, username, password
-
-    # cache pricing list
-    price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
-    price_worker.init session_id
-
 
     #if season_list.class == Hash
     #  object_list.merge season_list
@@ -396,13 +339,14 @@ class Import::AgencyController < ApplicationController
     stop = Time.new
     duration = (stop - start) * 1000
     @response[:content][:duration] = duration
-    connection.disconnect session_id unless session_id.nil? or connection.nil?
+    do_disconnect session_id, 2
     @response
   end
 
   def load_rentals_list
     lang_to_fill = %w(fr en)
     params[:rebuild_cache] = true
+    agency_id = params[:agency_id]
 
     params[:hl] = lang_to_fill.pop #params[:hl].nil? ? DEFAULT_LANG : params[:hl]
     @response = do_load_rentals_list
@@ -413,6 +357,16 @@ class Import::AgencyController < ApplicationController
     @response = do_load_rentals_list
     reindex_status = last_reindex_status != 1 ? @response[:content][:reindex_status] : 1
 
+    # cache pricing list
+    logger.debug 'Trying to connect to the service to cache price for rental objects'
+    session_id = do_connect 1015, 'CITI_VITTEL', 'Vittel_1_rx', 2
+    price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
+    price_worker.init session_id
+    object_list = fetch_rentals_objects agency_id
+    object_list.each { |item|
+      price_worker.load_and_cache item
+    }
+
     url = get_callback_url 'rentals'
     begin
       logger.info 'Fetching url [%s] to refresh picture' % [url]
@@ -420,6 +374,8 @@ class Import::AgencyController < ApplicationController
     rescue Exception => e
       logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
     end
+
+    do_disconnect session_id
 
     duration += @response[:content][:duration]
 
@@ -437,8 +393,7 @@ class Import::AgencyController < ApplicationController
     lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
     rebuild_cache = params[:rebuild_cache].nil? ? false : params[:rebuild_cache]
 
-    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V2
-    session_id = connection.connect(channel_id, username, password)
+    session_id = do_connect channel_id, username, password, 2
     agency_id = params[:agency_id]
     cache = CitiSoapLoader::Cache.new agency_id, 'rentals'
     price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
@@ -479,6 +434,8 @@ class Import::AgencyController < ApplicationController
       @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :nb_objects => object_list.count, :reindex_status => reindex_status}}
     end
 
+    do_disconnect session_id, 2
+
     respond_with @response
   end
 
@@ -487,9 +444,7 @@ class Import::AgencyController < ApplicationController
     channel_id = 3
     username = 'CITI_COURTAGE_PERSO'
     password = 'LetMeIn_Now_Courtage_Perso'
-    agency_id = params[:agency_id]
-    connection = CitiSoapLoader::Connection.new CitiSoapLoader::Connection::WSDL_API_V1
-    session_id = connection.connect(channel_id, username, password)
+    session_id = do_connect channel_id, username, password 1
 
     lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
 
@@ -511,6 +466,8 @@ class Import::AgencyController < ApplicationController
     rescue Exception => e
       logger.error 'Problem during fetching url [%s] to refresh picture [%s]' % [url, e.message]
     end
+
+    do_disconnect session_id
 
     @response = {:statusCode => 0, :statusMessage => 'Success', :content => {:agency_id => agency_id, :objects => object_list}}
     respond_with @response
@@ -567,5 +524,64 @@ class Import::AgencyController < ApplicationController
       callback_url = params[:callback_url]
     end
     callback_url
+  end
+
+  def do_connect(channel_id, username, password, version = 1)
+    logger.debug 'Trying to connect to the service to cache price for rental objects'
+    wsdl_url = get_connection_url version
+    connection = CitiSoapLoader::Connection.new wsdl_url
+    connection.connect channel_id, username, password
+  end
+
+  def do_disconnect(session_id,  version = 1)
+    wsdl_url = get_connection_url version
+    connection = CitiSoapLoader::Connection.new wsdl_url
+    connection.disconnect session_id
+  end
+
+  def get_connection_url(version = 1)
+    (version == 1) ? CitiSoapLoader::Connection::WSDL_API_V1 : CitiSoapLoader::Connection::WSDL_API_V2
+  end
+
+  def select_image_name(img)
+    names = %w(url_large url_medium url_small unc_path_source)
+    img_name = nil
+    names.each{|name|
+      next if name.nil?
+      img_name = img[name]
+      break
+    }
+    img_name
+  end
+
+  def cache_images(item, cache, target = 'sales')
+    return if item.nil? || item['object_images'].nil? || item['object_images']['object_image'].nil?
+    base_url = 'http://www.RentAlp.ch/ObjectImages/'
+    images = item['object_images']['object_image']
+    images = [images] if images.class != Array
+    images.each { |img|
+      img_name = select_image_name img
+      next if img_name.nil?
+      match = /http:\/\/\w+/i.match(img_name)
+      if match and match.size > 0
+        clean_url = File.dirname(img_name) + '/' +  Uploads::Helper::clean_url(File.basename(img_name))
+        cache.cache_image_from_url item, clean_url, File.basename(img_name), target
+      else
+        image_url = base_url + img[img_name].gsub('\\', '/')
+        cache.cache_image_by_url item, image_url, target
+      end
+
+    }
+  end
+
+  def cache_images_for_list(item_list, cache)
+    0 unless !item_list.nil? or (item_list.class == Array and item_list.size > 0)
+    cpt = 0
+    item_list.each { |item|
+      thumb = item[:thumb_nail_url].nil? ? item['thumb_nail_url'] : item[:thumb_nail_url]
+      next unless !thumb.nil? and cache.store_image_for_list thumb
+      cpt += 1
+    }
+    cpt
   end
 end
