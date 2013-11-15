@@ -444,7 +444,7 @@ class Import::AgencyController < ApplicationController
     channel_id = 3
     username = 'CITI_COURTAGE_PERSO'
     password = 'LetMeIn_Now_Courtage_Perso'
-    session_id = do_connect channel_id, username, password 1
+    session_id = do_connect channel_id, username, password, 1
 
     lang = params[:hl].nil? ? DEFAULT_LANG : params[:hl]
 
