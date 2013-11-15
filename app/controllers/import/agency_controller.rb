@@ -296,6 +296,13 @@ class Import::AgencyController < ApplicationController
     #    object_list.concat season_list
     #  end
     #end
+    channel_id = 1015
+    username = 'CITI_VITTEL'
+    password = 'Vittel_1_rx'
+    session_id = do_connect channel_id, username, password, 2
+
+    price_worker = CitiSoapLoader::PriceListWorker.new agency_id, CitiSoapLoader::PriceListWorker::LOADING
+    price_worker.init session_id
 
     cache.store(lang + '_list', 'json', object_list)
     cache_images_for_list object_list, cache
