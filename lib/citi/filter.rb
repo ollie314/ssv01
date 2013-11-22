@@ -19,14 +19,18 @@ class Filter
     else
       occupations = item['a_occupation']['occupation']
     end
-    occupations.each{ |_it|
+    occupations.each { |_it|
       # as soon as we reach an unavailability, break out the loop and return false
       break if found_occupied_range
-      start_date = Time.parse _it['start_date'].split('T')[0]
-      @min_range_date = start_date if @min_range_date.nil? || start_date < @min_range_date
-      end_date = Time.parse _it['end_date'].split('T')[0]
-      @max_range_date = end_date if @max_range_date.nil? || end_date > @max_range_date
-      found_occupied_range = check start_date, end_date
+      begin
+        start_date = Time.parse _it['start_date'].split('T')[0]
+        @min_range_date = start_date if @min_range_date.nil? || start_date < @min_range_date
+        end_date = Time.parse _it['end_date'].split('T')[0]
+        @max_range_date = end_date if @max_range_date.nil? || end_date > @max_range_date
+        found_occupied_range = check start_date, end_date
+      rescue
+        next
+      end
     }
     return false if found_occupied_range
     # check if an occupied exist between the expected range
