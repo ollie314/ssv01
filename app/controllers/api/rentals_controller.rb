@@ -56,7 +56,7 @@ class Api::RentalsController < ApplicationController
     nb_rooms_min = params[:nb_rooms_min].nil? ? 0 : Integer(params[:nb_rooms_min])
     nb_rooms_max = params[:nb_rooms_max].nil? ? 999 : Integer(params[:nb_rooms_max])
 
-    date_sensitivity = !(params[:start_date].nil? and params[:end_date].nil?)
+    date_sensitivity = !(params[:start_date].nil? or params[:end_date].nil?)
     start_date = params[:start_date].nil? ? '' : params[:start_date]
     end_date = params[:end_date].nil? ? '' : params[:end_date]
 

@@ -373,7 +373,6 @@ class Import::AgencyController < ApplicationController
     object_list.each { |item|
       price_worker.load_and_cache item
     }
-
     url = get_callback_url 'rentals'
     begin
       logger.info 'Fetching url [%s] to refresh picture' % [url]

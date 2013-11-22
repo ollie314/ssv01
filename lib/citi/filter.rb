@@ -13,6 +13,7 @@ class Filter
   def accept(item)
     found_occupied_range = false
     return true if item['a_occupation'].nil? || item['a_occupation']['occupation'].nil?
+    return false if item['a_dispo'].nil? || item['a_dispo']['dispo'].nil?
     if !item['a_occupation']['occupation'].class == Array
       occupations = [item['a_occupation']['occupation']]
     else
